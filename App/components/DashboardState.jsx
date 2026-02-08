@@ -9,79 +9,11 @@ import ActivitySidebar from "./ActivitySidebar";
 import DashboardStats from "./DashboardStats";
 import ProjectDetailsDrawer from "./ProjectDetailsDrawer";
 
-export default function DashboardState() {
+export default function DashboardState({ projects: initialProjects }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
   const [selectedProject, setSelectedProject] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const handleProjectClick = (project) => {
-    setSelectedProject(project);
-    setIsDrawerOpen(true);
-  };
-
-  const handleCloseDrawer = () => {
-    setIsDrawerOpen(false);
-    // Don't clear selectedProject immediately to allow for closing animation
-  };
-
-  const projects = [
-    {
-      name: "api-gateway",
-      path: "~/Projects/api-gateway",
-      status: "Clean",
-      branch: "main",
-      lastCommit: "Bump dependencies and fix security audit",
-      summary: "A Node.js API gateway service that handles authentication and rate limiting. The project is up-to-date with the latest security standards."
-    },
-    {
-      name: "backend-services",
-      path: "~/Projects/backend-services",
-      status: "Behind Remote",
-      branch: "main",
-      lastCommit: "Merge pull request #156",
-      summary: "Microservices architecture for the main platform. Currently behind the remote branch and needs to be synced with the main branch."
-    },
-    {
-      name: "ml-pipeline",
-      path: "~/Projects/ml-pipeline",
-      status: "Uncommitted",
-      branch: "develop",
-      lastCommit: "WIP: data normalization",
-      summary: "Data processing pipeline for machine learning models. Contains uncommitted changes related to data normalization steps."
-    },
-    {
-      name: "design-system",
-      path: "~/Projects/design-system",
-      status: "Clean",
-      branch: "main",
-      lastCommit: "Add new button variants and typography scale",
-      summary: "A shared component library for all internal projects. Focused on maintaining design consistency across different platforms."
-    },
-    {
-      name: "docs-site",
-      path: "~/Projects/docs-site",
-      status: "Clean",
-      branch: "main",
-      lastCommit: "Update API reference docs",
-      summary: "Documentation website built with Astro and Tailwind CSS. Contains all internal and external API guides."
-    },
-    {
-      name: "landing-page",
-      path: "~/Projects/landing-page",
-      status: "Uncommitted",
-      branch: "redesign",
-      lastCommit: "Update hero section with new copy",
-      summary: "The marketing landing page for the core product. Currently undergoing a major visual redesign on the redesign branch."
-    },
-    {
-      name: "ml-pipeline",
-      path: "~/Projects/ml-pipeline",
-      status: "Conflicts",
-      branch: "experiment/new-model",
-      lastCommit: "WIP: Testing new transformer model",
-      summary: "A Python-based data processing pipeline. Currently experiencing merge conflicts after rebasing with the latest development branch."
-    }
-  ];
+  const [projects, setProjects] = useState(initialProjects || []);
 
   const activities = [
     { project: "react-dashboard", time: "2 min ago", action: "Add chart component", icon: GitBranch, colorClass: "bg-primary/10", iconColor: "text-primary" },
@@ -90,6 +22,16 @@ export default function DashboardState() {
     { project: "design-system", time: "3 hours ago", action: "Merged PR #42", icon: GitBranch, colorClass: "bg-info/10", iconColor: "text-info" },
     { project: "landing-page", time: "5 hours ago", action: "Conflict resolved", icon: CheckCircle2, colorClass: "bg-success/10", iconColor: "text-success" }
   ];
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setIsDrawerOpen(true);
+  }
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    // Don't clear selectedProject immediately to allow for closing animation
+  };
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-base-100">

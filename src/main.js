@@ -1,6 +1,9 @@
-import { app, BrowserWindow } from "electron";
-import path from "node:path";
-import started from "electron-squirrel-startup";
+const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
+const path = require("node:path");
+const started = require("electron-squirrel-startup");
+const { exec } = require("child_process");
+const fs = require("fs");
+const simpleGit = require("simple-git");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -29,6 +32,69 @@ const createWindow = () => {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
 };
+
+// IPC Handlers
+ipcMain.handle("select-folder", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+  if (result.canceled) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle("scan-repos", async (event, rootPath) => {
+  const repos = [];
+  const scan = async (dir) => {
+    const files = fs.readdirSync(dir);
+    if (files.includes(".git")) {
+      const git = simpleGit(dir);
+      const status = await git.status();
+      const branch = await git.revparse(["--abbrev-ref", "HEAD"]);
+      const log = await git.log({ maxCount: 1 });
+
+      repos.push({
+        name: path.basename(dir),
+        path: dir,
+        status: status.files.length > 0 ? "Uncommitted" : "Clean",
+        branch: branch,
+        lastCommit: log.latest?.message || "No commits",
+        summary: "Repository found on disk.", // Placeholder for AI summary later
+      });
+      return; // Stop recursion if .git found
+    }
+
+    for (const file of files) {
+      const fullPath = path.join(dir, file);
+      if (
+        fs.statSync(fullPath).isDirectory() &&
+        !file.startsWith(".") &&
+        file !== "node_modules"
+      ) {
+        await scan(fullPath);
+      }
+    }
+  };
+
+  try {
+    await scan(rootPath);
+    return repos;
+  } catch (error) {
+    console.error("Scan error:", error);
+    return [];
+  }
+});
+
+ipcMain.handle("open-in-editor", async (event, repoPath) => {
+  // Try common editors or use system default
+  const editors = ["code", "cursor", "subl"];
+  for (const cmd of editors) {
+    try {
+      exec(`${cmd} "${repoPath}"`);
+      return true;
+    } catch (e) {}
+  }
+  return shell.openPath(repoPath);
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

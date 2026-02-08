@@ -12,28 +12,43 @@ export default function App() {
     const [scanProgress, setScanProgress] = useState({ folders: 0, repos: 0 })
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [theme, setTheme] = useState("light")
+    const [scannedRepos, setScannedRepos] = useState([])
 
-    const handleStartScan = () => {
+    const handleStartScan = async () => {
         if (view === "scanning") return
 
-        setView("scanning")
-        setScanProgress({ folders: 0, repos: 0 })
+        try {
+            const folderPath = await window.electronAPI.selectFolder();
+            if (!folderPath) return;
 
-        let folders = 0
-        let repos = 0
-        const interval = setInterval(() => {
-            folders += Math.floor(Math.random() * 8) + 2
-            if (Math.random() > 0.8) repos += 1
+            setView("scanning")
+            setScanProgress({ folders: 0, repos: 0 })
 
-            setScanProgress({ folders, repos })
+            // Actual scan
+            const repos = await window.electronAPI.scanRepos(folderPath);
 
-            if (folders >= 114) {
-                clearInterval(interval)
-                setTimeout(() => {
-                    setView("dashboard")
-                }, 500)
-            }
-        }, 100)
+            // Simulation-like progress but based on actual results
+            let folders = 0;
+            const interval = setInterval(() => {
+                folders += Math.floor(Math.random() * 8) + 2;
+                setScanProgress({
+                    folders,
+                    repos: Math.floor((folders / 114) * repos.length)
+                });
+
+                if (folders >= 114) {
+                    clearInterval(interval);
+                    setScannedRepos(repos);
+                    setTimeout(() => {
+                        setView("dashboard");
+                    }, 500);
+                }
+            }, 50);
+        } catch (error) {
+            console.error("Failed to scan:", error);
+            toast.error("Failed to scan selected folder");
+            setView("welcome");
+        }
     }
 
     const handleBackToWelcome = () => {
@@ -64,7 +79,7 @@ export default function App() {
                             </div>
                         )}
                         {view === "dashboard" && (
-                            <DashboardState />
+                            <DashboardState projects={scannedRepos} />
                         )}
                     </div>
                 </main>
