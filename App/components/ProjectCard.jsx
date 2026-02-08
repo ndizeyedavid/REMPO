@@ -1,9 +1,9 @@
 import React from "react";
-import { Folder, GitBranch, Clock, Sparkles } from "lucide-react";
+import { Folder, GitBranch, Clock, Sparkles, MoreHorizontal, ExternalLink, GitCommit, Trash2 } from "lucide-react";
 
 export default function ProjectCard({ project }) {
     return (
-        <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group">
+        <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative">
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors">
@@ -13,6 +13,39 @@ export default function ProjectCard({ project }) {
                         <h3 className="font-semibold text-lg">{project.name}</h3>
                         <p className="text-xs opacity-40 font-mono">{project.path}</p>
                     </div>
+                </div>
+
+                {/* Action Menu */}
+                <div className="dropdown dropdown-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button tabIndex={0} className="btn btn-ghost btn-sm btn-square rounded-lg bg-base-200/50">
+                        <MoreHorizontal className="size-4" />
+                    </button>
+                    <ul tabIndex={0} className="dropdown-content z-1 menu p-2 shadow-2xl bg-base-300 rounded-xl w-52 mt-2 border border-base-content/10">
+                        <li>
+                            <button className="flex items-center gap-3 py-2.5">
+                                <ExternalLink className="size-4 opacity-70" />
+                                <span>Open in Editor</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className="flex items-center gap-3 py-2.5">
+                                <GitCommit className="size-4 opacity-70" />
+                                <span>Quick Commit</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className="flex items-center gap-3 py-2.5 border-b border-base-content/5 rounded-none pb-3 mb-1">
+                                <GitBranch className="size-4 opacity-70" />
+                                <span>Switch Branch</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className="flex items-center gap-3 py-2.5 text-error hover:bg-error/10">
+                                <Trash2 className="size-4" />
+                                <span>Remove from list</span>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
 

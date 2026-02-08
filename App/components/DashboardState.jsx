@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Search, Filter, List, Grid2X2, GitBranch,
   CheckCircle2, AlertCircle, ChevronDown, ArrowUpDown, Check
 } from "lucide-react";
 import ProjectCard from "./ProjectCard";
+import ProjectListItem from "./ProjectListItem";
 import ActivitySidebar from "./ActivitySidebar";
 import DashboardStats from "./DashboardStats";
 
 export default function DashboardState() {
+  const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+
   const projects = [
     {
       name: "api-gateway",
@@ -32,6 +35,38 @@ export default function DashboardState() {
       branch: "develop",
       lastCommit: "WIP: data normalization",
       summary: "Data processing pipeline for machine learning models. Contains uncommitted changes related to data normalization steps."
+    },
+    {
+      name: "design-system",
+      path: "~/Projects/design-system",
+      status: "Clean",
+      branch: "main",
+      lastCommit: "Add new button variants and typography scale",
+      summary: "A shared component library for all internal projects. Focused on maintaining design consistency across different platforms."
+    },
+    {
+      name: "docs-site",
+      path: "~/Projects/docs-site",
+      status: "Clean",
+      branch: "main",
+      lastCommit: "Update API reference docs",
+      summary: "Documentation website built with Astro and Tailwind CSS. Contains all internal and external API guides."
+    },
+    {
+      name: "landing-page",
+      path: "~/Projects/landing-page",
+      status: "Uncommitted",
+      branch: "redesign",
+      lastCommit: "Update hero section with new copy",
+      summary: "The marketing landing page for the core product. Currently undergoing a major visual redesign on the redesign branch."
+    },
+    {
+      name: "ml-pipeline",
+      path: "~/Projects/ml-pipeline",
+      status: "Conflicts",
+      branch: "experiment/new-model",
+      lastCommit: "WIP: Testing new transformer model",
+      summary: "A Python-based data processing pipeline. Currently experiencing merge conflicts after rebasing with the latest development branch."
     }
   ];
 
@@ -142,10 +177,16 @@ export default function DashboardState() {
                 </ul>
               </div>
               <div className="join bg-base-300/30 rounded-xl border border-base-content/5 overflow-hidden h-fit">
-                <button className="btn btn-ghost btn-sm join-item bg-base-200">
+                <button
+                  className={`btn btn-ghost btn-sm join-item ${viewMode === "grid" ? "bg-base-200" : "opacity-50"}`}
+                  onClick={() => setViewMode("grid")}
+                >
                   <Grid2X2 className="size-4" />
                 </button>
-                <button className="btn btn-ghost btn-sm join-item opacity-50">
+                <button
+                  className={`btn btn-ghost btn-sm join-item ${viewMode === "list" ? "bg-base-200" : "opacity-50"}`}
+                  onClick={() => setViewMode("list")}
+                >
                   <List className="size-4" />
                 </button>
               </div>
@@ -167,12 +208,20 @@ export default function DashboardState() {
             </span>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {projects.map((p, idx) => (
-              <ProjectCard key={idx} project={p} />
-            ))}
-          </div>
+          {/* Display */}
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {projects.map((p, idx) => (
+                <ProjectCard key={idx} project={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {projects.map((p, idx) => (
+                <ProjectListItem key={idx} project={p} />
+              ))}
+            </div>
+          )}
         </div>
 
         <ActivitySidebar activities={activities} />
