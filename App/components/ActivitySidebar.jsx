@@ -2,12 +2,12 @@ import React from "react";
 import { History, ChevronRight } from "lucide-react";
 
 const ActivityItem = ({ activity }) => (
-  <div className="flex gap-3 py-3 border-b border-base-content/5 last:border-0">
+  <div className="flex gap-3 py-3 border-b border-base-content/5 last:border-0 hover:bg-base-200 cursor-pointer px-2 rounded-md">
     <div
-      className={`mt-1 p-1.5 rounded-full ${activity.colorClass} bg-opacity-10`}
+      className={`mt-1 size-7 rounded-full ${activity.colorClass} bg-opacity-10 flex items-center justify-center`}
     >
       <activity.icon
-        className={`size-3.5 ${activity.colorClass.replace("bg-", "text-")}`}
+        className={`size-3.5 ${activity.iconColor}`}
       />
     </div>
     <div className="min-w-0 flex-1">

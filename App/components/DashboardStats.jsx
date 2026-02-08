@@ -7,11 +7,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const StatsCard = ({ icon: Icon, label, value, colorClass }) => (
+const StatsCard = ({ icon: Icon, label, value, colorClass, iconColor }) => (
   <div className="bg-base-300/50 p-4 rounded-xl border border-base-content/5">
     <div className="flex items-center gap-3">
       <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10`}>
-        <Icon className={`size-5 ${colorClass.replace("bg-", "text-")}`} />
+        <Icon className={`size-5 ${iconColor}`} />
       </div>
       <div>
         <div className="text-2xl font-bold">{value}</div>
@@ -28,31 +28,36 @@ export default function DashboardStats() {
         icon={Folder}
         label="Total Repos"
         value="8"
-        colorClass="bg-primary"
+        colorClass="bg-primary/10"
+        iconColor="text-primary"
       />
       <StatsCard
         icon={CheckCircle2}
         label="Clean"
         value="3"
-        colorClass="bg-success"
+        colorClass="bg-success/10"
+        iconColor="text-success"
       />
       <StatsCard
         icon={Clock}
         label="Uncommitted"
         value="2"
-        colorClass="bg-warning"
+        colorClass="bg-warning/10"
+        iconColor="text-warning"
       />
       <StatsCard
         icon={ArrowUpCircle}
         label="Ahead"
         value="1"
-        colorClass="bg-info"
+        colorClass="bg-info/10"
+        iconColor="text-info"
       />
       <StatsCard
         icon={AlertCircle}
         label="Conflicts"
         value="1"
-        colorClass="bg-error"
+        colorClass="bg-error/10"
+        iconColor="text-error"
       />
     </div>
   );

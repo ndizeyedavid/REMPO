@@ -84,11 +84,11 @@ export default function DashboardState() {
   ];
 
   const activities = [
-    { project: "react-dashboard", time: "2 min ago", action: "Add chart component", icon: GitBranch, colorClass: "bg-primary" },
-    { project: "api-gateway", time: "15 min ago", action: "Pushed 3 commits to main", icon: CheckCircle2, colorClass: "bg-success" },
-    { project: "ml-pipeline", time: "1 hour ago", action: "Merge conflict detected", icon: AlertCircle, colorClass: "bg-error" },
-    { project: "design-system", time: "3 hours ago", action: "Merged PR #42", icon: GitBranch, colorClass: "bg-info" },
-    { project: "landing-page", time: "5 hours ago", action: "Conflict resolved", icon: CheckCircle2, colorClass: "bg-success" }
+    { project: "react-dashboard", time: "2 min ago", action: "Add chart component", icon: GitBranch, colorClass: "bg-primary/10", iconColor: "text-primary" },
+    { project: "api-gateway", time: "15 min ago", action: "Pushed 3 commits to main", icon: CheckCircle2, colorClass: "bg-success/10", iconColor: "text-success" },
+    { project: "ml-pipeline", time: "1 hour ago", action: "Merge conflict detected", icon: AlertCircle, colorClass: "bg-error/10", iconColor: "text-error" },
+    { project: "design-system", time: "3 hours ago", action: "Merged PR #42", icon: GitBranch, colorClass: "bg-info/10", iconColor: "text-info" },
+    { project: "landing-page", time: "5 hours ago", action: "Conflict resolved", icon: CheckCircle2, colorClass: "bg-success/10", iconColor: "text-success" }
   ];
 
   return (
