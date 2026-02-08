@@ -5,10 +5,12 @@ import Header from "./components/Header"
 import WelcomeState from "./components/WelcomeState"
 import ScanningState from "./components/ScanningState"
 import DashboardState from "./components/DashboardState"
+import SettingsModal from "./components/SettingsModal"
 
 export default function App() {
     const [view, setView] = useState("welcome") // "welcome", "scanning", "dashboard"
     const [scanProgress, setScanProgress] = useState({ folders: 0, repos: 0 })
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
     const handleStartScan = () => {
         if (view === "scanning") return
@@ -40,7 +42,7 @@ export default function App() {
 
     return (
         <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden">
-            <Sidebar onScanProjects={handleStartScan} />
+            <Sidebar onScanProjects={handleStartScan} onSettings={() => setIsSettingsOpen(true)} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <Header
                     status={view === "scanning" ? "Scanning projects..." : view === "dashboard" ? "Scan complete" : "Ready to scan"}
@@ -66,6 +68,10 @@ export default function App() {
                     </div>
                 </main>
             </div>
+
+            {isSettingsOpen && (
+                <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+            )}
         </div>
     )
 }
