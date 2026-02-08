@@ -7,9 +7,22 @@ import ProjectCard from "./ProjectCard";
 import ProjectListItem from "./ProjectListItem";
 import ActivitySidebar from "./ActivitySidebar";
 import DashboardStats from "./DashboardStats";
+import ProjectDetailsDrawer from "./ProjectDetailsDrawer";
 
 export default function DashboardState() {
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    // Don't clear selectedProject immediately to allow for closing animation
+  };
 
   const projects = [
     {
@@ -212,13 +225,17 @@ export default function DashboardState() {
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {projects.map((p, idx) => (
-                <ProjectCard key={idx} project={p} />
+                <div key={idx} onClick={() => handleProjectClick(p)} className="cursor-pointer">
+                  <ProjectCard project={p} />
+                </div>
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               {projects.map((p, idx) => (
-                <ProjectListItem key={idx} project={p} />
+                <div key={idx} onClick={() => handleProjectClick(p)} className="cursor-pointer">
+                  <ProjectListItem project={p} />
+                </div>
               ))}
             </div>
           )}
@@ -226,6 +243,14 @@ export default function DashboardState() {
 
         <ActivitySidebar activities={activities} />
       </div>
+
+      {/* Drawer */}
+      {isDrawerOpen && (
+        <ProjectDetailsDrawer
+          project={selectedProject}
+          onClose={handleCloseDrawer}
+        />
+      )}
     </div>
   );
 }
