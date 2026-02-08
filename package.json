@@ -1,6 +1,6 @@
 {
-  "name": "repo-call",
-  "productName": "repo-call",
+  "name": "rempo",
+  "productName": "rempo",
   "version": "1.0.0",
   "description": "Remember what you were building",
   "main": ".vite/build/main.js",

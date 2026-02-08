@@ -72,7 +72,7 @@ export default function DashboardState() {
                   All Status
                   <ChevronDown className="size-4 opacity-40" />
                 </button>
-                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-300 rounded-xl w-52 mt-2 border border-base-content/10">
+                <ul tabIndex={0} className="dropdown-content z-1 menu p-2 shadow-lg bg-base-300 rounded-xl w-52 mt-2 border border-base-content/10">
                   <li>
                     <button className="flex items-center justify-between bg-base-content/10">
                       <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function DashboardState() {
                   Name
                   <ChevronDown className="size-4 opacity-40" />
                 </button>
-                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-300 rounded-xl w-44 mt-2 border border-base-content/10">
+                <ul tabIndex={0} className="dropdown-content z-1 menu p-2 shadow-lg bg-base-300 rounded-xl w-44 mt-2 border border-base-content/10">
                   <li>
                     <button className="flex items-center justify-between bg-base-content/10">
                       <div className="flex items-center gap-2">
