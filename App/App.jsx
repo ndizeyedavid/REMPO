@@ -11,6 +11,7 @@ export default function App() {
     const [view, setView] = useState("welcome") // "welcome", "scanning", "dashboard"
     const [scanProgress, setScanProgress] = useState({ folders: 0, repos: 0 })
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+    const [theme, setTheme] = useState("light")
 
     const handleStartScan = () => {
         if (view === "scanning") return
@@ -41,7 +42,7 @@ export default function App() {
     }
 
     return (
-        <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden">
+        <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden" data-theme={theme}>
             <Sidebar onScanProjects={handleStartScan} onSettings={() => setIsSettingsOpen(true)} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <Header
@@ -70,7 +71,11 @@ export default function App() {
             </div>
 
             {isSettingsOpen && (
-                <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+                <SettingsModal
+                    onClose={() => setIsSettingsOpen(false)}
+                    currentTheme={theme}
+                    onThemeChange={setTheme}
+                />
             )}
         </div>
     )
