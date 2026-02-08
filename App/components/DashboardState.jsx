@@ -225,17 +225,17 @@ export default function DashboardState() {
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {projects.map((p, idx) => (
-                <div key={idx} onClick={() => handleProjectClick(p)} className="cursor-pointer">
-                  <ProjectCard project={p} />
-                </div>
+                // <div key={idx}  className="cursor-pointer">
+                <ProjectCard key={idx} project={p} handleProjectClick={handleProjectClick} />
+                // </div>
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               {projects.map((p, idx) => (
-                <div key={idx} onClick={() => handleProjectClick(p)} className="cursor-pointer">
-                  <ProjectListItem project={p} />
-                </div>
+                // <div key={idx} onClick={() => handleProjectClick(p)} className="cursor-pointer">
+                <ProjectListItem key={idx} project={p} handleProjectClick={handleProjectClick} />
+                // </div>
               ))}
             </div>
           )}

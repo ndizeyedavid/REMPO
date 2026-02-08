@@ -1,7 +1,7 @@
 import React from "react";
-import { Folder, GitBranch, Clock, Sparkles, MoreHorizontal, ChevronRight } from "lucide-react";
+import { Folder, GitBranch, Clock, Sparkles, MoreHorizontal, ChevronRight, ExternalLink, GitCommit, Trash2 } from "lucide-react";
 
-export default function ProjectListItem({ project }) {
+export default function ProjectListItem({ project, handleProjectClick }) {
   return (
     <div className="bg-base-300/30 p-3 rounded-xl border border-base-content/5 hover:border-primary/30 transition-all group flex items-center">
       {/* Icon */}
@@ -56,10 +56,38 @@ export default function ProjectListItem({ project }) {
 
       {/* Actions */}
       <div className="flex items-center gap-1 shrink-0 ml-auto">
-        <button className="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100">
-          <MoreHorizontal className="size-4" />
-        </button>
-        <button className="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100">
+        <div className="dropdown dropdown-end" id="menu">
+          <button tabIndex={0} className="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100">
+            <MoreHorizontal className="size-4" />
+          </button>
+          <ul tabIndex={0} className="dropdown-content z-1 menu p-2 shadow-2xl bg-base-300 rounded-xl w-52 mt-2 border border-base-content/10">
+            <li>
+              <button className="flex items-center gap-3 py-2.5">
+                <ExternalLink className="size-4 opacity-70" />
+                <span>Open in Editor</span>
+              </button>
+            </li>
+            <li>
+              <button className="flex items-center gap-3 py-2.5">
+                <GitCommit className="size-4 opacity-70" />
+                <span>Quick Commit</span>
+              </button>
+            </li>
+            <li>
+              <button className="flex items-center gap-3 py-2.5 border-b border-base-content/5 rounded-none pb-3 mb-1">
+                <GitBranch className="size-4 opacity-70" />
+                <span>Switch Branch</span>
+              </button>
+            </li>
+            <li>
+              <button className="flex items-center gap-3 py-2.5 text-error hover:bg-error/10">
+                <Trash2 className="size-4" />
+                <span>Remove from list</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <button className="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-100" onClick={() => handleProjectClick(project)}>
           <ChevronRight className="size-4" />
         </button>
       </div>

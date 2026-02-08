@@ -1,9 +1,14 @@
 import React from "react";
 import { Folder, GitBranch, Clock, Sparkles, MoreHorizontal, ExternalLink, GitCommit, Trash2 } from "lucide-react";
 
-export default function ProjectCard({ project }) {
+export default function ProjectCard({ project, handleProjectClick }) {
+    function verifyClickArea(e) {
+        if (e.target.id != "menu") {
+            handleProjectClick(project);
+        }
+    }
     return (
-        <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative">
+        <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative" onClick={verifyClickArea}>
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors">
@@ -16,7 +21,7 @@ export default function ProjectCard({ project }) {
                 </div>
 
                 {/* Action Menu */}
-                <div className="dropdown dropdown-end opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="dropdown dropdown-end opacity-0 group-hover:opacity-100 transition-opacity" id="menu">
                     <button tabIndex={0} className="btn btn-ghost btn-sm btn-square rounded-lg bg-base-200/50">
                         <MoreHorizontal className="size-4" />
                     </button>
@@ -52,10 +57,10 @@ export default function ProjectCard({ project }) {
             <div className="flex gap-2 mb-4">
                 <span
                     className={`badge badge-sm gap-1 py-3 px-3 ${project.status === "Clean"
-                            ? "badge-success bg-success/10 text-success border-success/20"
-                            : project.status === "Uncommitted"
-                                ? "badge-warning bg-warning/10 text-warning border-warning/20"
-                                : "badge-info bg-info/10 text-info border-info/20"
+                        ? "badge-success bg-success/10 text-success border-success/20"
+                        : project.status === "Uncommitted"
+                            ? "badge-warning bg-warning/10 text-warning border-warning/20"
+                            : "badge-info bg-info/10 text-info border-info/20"
                         }`}
                 >
                     <div className="size-1.5 rounded-full bg-current" />
