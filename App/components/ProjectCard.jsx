@@ -11,7 +11,7 @@ export default function ProjectCard({ project, handleProjectClick }) {
         <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative" onClick={verifyClickArea}>
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-primary/10 text-primary ">
+                    <div className="p-3 rounded-xl bg-primary/10 text-primary">
                         <Folder className="size-6" />
                     </div>
                     <div>

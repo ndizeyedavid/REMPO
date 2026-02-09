@@ -32,12 +32,12 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md z-200 animate-in fade-in duration-300"
         onClick={onClose}
       />
 
       {/* Modal Container */}
-      <div className="fixed inset-0 flex items-center justify-center z-[201] p-4 pointer-events-none">
+      <div className="fixed inset-0 flex items-center justify-center z-201 p-4 pointer-events-none">
         <div className="bg-base-300 w-full max-w-4xl h-[600px] rounded-3xl shadow-2xl border border-base-content/10 overflow-hidden flex pointer-events-auto animate-in zoom-in-95 duration-300">
 
           {/* Sidebar Navigation */}

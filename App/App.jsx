@@ -123,14 +123,6 @@ export default function App() {
         await handleStartScan(activeFolderPath, { useCache: false });
     }
 
-    const sidebarPrimaryAction = () => {
-        if (view === "dashboard" && activeFolderPath) {
-            return handleRefreshScan();
-        }
-
-        return handleStartScan();
-    }
-
     const handleBackToWelcome = () => {
         setView("welcome")
         setScanProgress({ folders: 0, repos: 0 })
@@ -139,11 +131,11 @@ export default function App() {
     return (
         <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden" data-theme={theme}>
             <Sidebar
-                onScanProjects={sidebarPrimaryAction}
+                onScanProjects={() => handleStartScan()}
+                onRefreshProjects={handleRefreshScan}
                 onSettings={() => setIsSettingsOpen(true)}
                 watchedFolders={watchedFolders}
                 onFolderClick={(path) => handleStartScan(path)}
-                primaryActionLabel={view === "dashboard" && activeFolderPath ? "Refresh" : "Scan Projects"}
                 primaryActionVariant={view === "dashboard" && activeFolderPath ? "refresh" : "scan"}
             />
             <div className="flex min-w-0 flex-1 flex-col">

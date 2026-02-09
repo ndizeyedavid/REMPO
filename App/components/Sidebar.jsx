@@ -3,15 +3,14 @@ import { Folder, ScanLine, Settings, RefreshCcw } from "lucide-react";
 export default function Sidebar({
     watchedFolders = [],
     onScanProjects,
-    primaryActionLabel,
+    onRefreshProjects,
     primaryActionVariant,
     onSettings,
     onFolderClick,
     title = "Rempo",
     subtitle = "Remember what you were building",
 }) {
-    const resolvedLabel = primaryActionLabel || "Scan Projects";
-    const resolvedVariant = primaryActionVariant || (resolvedLabel.toLowerCase().includes("refresh") ? "refresh" : "scan");
+    const resolvedVariant = primaryActionVariant || "scan";
 
     return (
         <aside className="flex h-screen w-80 flex-col border-r border-base-content/10 bg-base-300 text-base-content">
@@ -29,18 +28,27 @@ export default function Sidebar({
                 <div className="divider m-0" />
 
                 <div className="px-5 py-4">
-                    <button
-                        type="button"
-                        className="btn btn-primary btn-block rounded-full shadow-lg shadow-primary/20"
-                        onClick={onScanProjects}
-                    >
-                        {resolvedVariant === "refresh" ? (
-                            <RefreshCcw className="size-5" />
-                        ) : (
+                    <div className={`grid ${resolvedVariant == "refresh" ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-block rounded-full shadow-lg shadow-primary/20"
+                            onClick={onScanProjects}
+                        >
                             <ScanLine className="size-5" />
+                            {resolvedVariant == "refresh" ? "Scan" : "Scan Projects"}
+                        </button>
+
+                        {resolvedVariant === "refresh" && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost btn-block rounded-full border border-base-content/10 bg-base-100/30"
+                                onClick={onRefreshProjects}
+                            >
+                                <RefreshCcw className="size-5" />
+                                Refresh
+                            </button>
                         )}
-                        {resolvedLabel}
-                    </button>
+                    </div>
                 </div>
             </div>
 

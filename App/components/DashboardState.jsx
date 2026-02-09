@@ -192,10 +192,10 @@ export default function DashboardState({ projects: initialProjects }) {
             >
               <div className={`size-1.5 rounded-full ${statusFilter === "Uncommitted" ? "bg-warning-content" : "bg-warning"}`} /> Uncommitted
             </span>
-            <span className="badge bg-info/10 text-info border-info/20 gap-1.5 py-3 px-3 cursor-pointer hover:bg-info hover:text-info-content transition-colors opacity-50 cursor-not-allowed">
+            <span className="badge bg-info/10 text-info border-info/20 gap-1.5 py-3 px-3 cursor-pointer hover:bg-info hover:text-info-content transition-colors opacity-50">
               <div className="size-1.5 rounded-full bg-info" /> Ahead
             </span>
-            <span className="badge bg-error/10 text-error border-error/20 gap-1.5 py-3 px-3 cursor-pointer hover:bg-error hover:text-error-content transition-colors opacity-50 cursor-not-allowed">
+            <span className="badge bg-error/10 text-error border-error/20 gap-1.5 py-3 px-3 cursor-pointer hover:bg-error hover:text-error-content transition-colors opacity-50">
               <div className="size-1.5 rounded-full bg-error" /> Conflicts
             </span>
           </div>
