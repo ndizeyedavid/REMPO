@@ -21,41 +21,49 @@ const StatsCard = ({ icon: Icon, label, value, colorClass, iconColor }) => (
   </div>
 );
 
-export default function DashboardStats() {
+export default function DashboardStats({ projects = [] }) {
+  const stats = {
+    total: projects.length,
+    clean: projects.filter(p => p.status === "Clean").length,
+    uncommitted: projects.filter(p => p.status === "Uncommitted" || p.status === "Uncommitted Changes").length,
+    ahead: projects.filter(p => p.status === "Ahead").length,
+    conflicts: projects.filter(p => p.status === "Conflicts").length
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <StatsCard
         icon={Folder}
         label="Total Repos"
-        value="8"
+        value={stats.total}
         colorClass="bg-primary/10"
         iconColor="text-primary"
       />
       <StatsCard
         icon={CheckCircle2}
         label="Clean"
-        value="3"
+        value={stats.clean}
         colorClass="bg-success/10"
         iconColor="text-success"
       />
       <StatsCard
         icon={Clock}
         label="Uncommitted"
-        value="2"
+        value={stats.uncommitted}
         colorClass="bg-warning/10"
         iconColor="text-warning"
       />
       <StatsCard
         icon={ArrowUpCircle}
         label="Ahead"
-        value="1"
+        value={stats.ahead}
         colorClass="bg-info/10"
         iconColor="text-info"
       />
       <StatsCard
         icon={AlertCircle}
         label="Conflicts"
-        value="1"
+        value={stats.conflicts}
         colorClass="bg-error/10"
         iconColor="text-error"
       />
