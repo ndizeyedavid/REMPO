@@ -202,6 +202,38 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
   }
 });
 
+ipcMain.handle("get-repo-details", async (event, repoPath) => {
+  try {
+    const git = simpleGit(repoPath);
+
+    // Get recent commits
+    const log = await git.log({ maxCount: 10 });
+    const commits = log.all.map((c) => ({
+      id: c.hash.substring(0, 7),
+      message: c.message,
+      time: c.date,
+      author: c.author_name,
+    }));
+
+    // Get changed files (working directory status)
+    const status = await git.status();
+    const files = status.files.map((f) => ({
+      name: f.path,
+      status:
+        f.index === "A" || f.working_dir === "A"
+          ? "added"
+          : f.index === "D" || f.working_dir === "D"
+            ? "deleted"
+            : "modified",
+    }));
+
+    return { commits, files };
+  } catch (error) {
+    console.error("Failed to fetch repo details:", error);
+    return { commits: [], files: [] };
+  }
+});
+
 ipcMain.handle("open-in-editor", async (event, repoPath) => {
   // Try common editors or use system default
   const editors = ["code", "cursor", "subl"];

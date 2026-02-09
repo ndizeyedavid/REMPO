@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   selectFolder: () => ipcRenderer.invoke("select-folder"),
   scanRepos: (rootPath) => ipcRenderer.invoke("scan-repos", rootPath),
   openInEditor: (repoPath) => ipcRenderer.invoke("open-in-editor", repoPath),
-  getStore: () => ipcRenderer.invoke("get-store"),
+  getStore: (key) => ipcRenderer.invoke("get-store", key),
   updateStore: (key, value) => ipcRenderer.invoke("update-store", key, value),
+  getRepoDetails: (repoPath) =>
+    ipcRenderer.invoke("get-repo-details", repoPath),
 });
