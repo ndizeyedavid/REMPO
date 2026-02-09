@@ -1,13 +1,18 @@
-import { Folder, ScanLine, Settings } from "lucide-react";
+import { Folder, ScanLine, Settings, RefreshCcw } from "lucide-react";
 
 export default function Sidebar({
     watchedFolders = [],
     onScanProjects,
+    primaryActionLabel,
+    primaryActionVariant,
     onSettings,
     onFolderClick,
     title = "Rempo",
     subtitle = "Remember what you were building",
 }) {
+    const resolvedLabel = primaryActionLabel || "Scan Projects";
+    const resolvedVariant = primaryActionVariant || (resolvedLabel.toLowerCase().includes("refresh") ? "refresh" : "scan");
+
     return (
         <aside className="flex h-screen w-80 flex-col border-r border-base-content/10 bg-base-300 text-base-content">
             <div className="">
@@ -29,8 +34,12 @@ export default function Sidebar({
                         className="btn btn-primary btn-block rounded-full shadow-lg shadow-primary/20"
                         onClick={onScanProjects}
                     >
-                        <ScanLine className="size-5" />
-                        Scan Projects
+                        {resolvedVariant === "refresh" ? (
+                            <RefreshCcw className="size-5" />
+                        ) : (
+                            <ScanLine className="size-5" />
+                        )}
+                        {resolvedLabel}
                     </button>
                 </div>
             </div>
