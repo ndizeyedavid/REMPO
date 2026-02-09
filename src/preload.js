@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   commitAndPush: (data) => ipcRenderer.invoke("commit-and-push", data),
   getRemoteUrl: (repoPath) => ipcRenderer.invoke("get-remote-url", repoPath),
   openInBrowser: (url) => ipcRenderer.invoke("open-in-browser", url),
+  sendNotification: (data) => ipcRenderer.invoke("send-notification", data),
 });

@@ -1,4 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  Notification,
+} = require("electron");
 const path = require("node:path");
 const started = require("electron-squirrel-startup");
 const { exec } = require("child_process");
@@ -13,6 +20,7 @@ const DEFAULT_STORE = {
   theme: "light",
   lastScannedFolder: null,
   watchedFolders: [],
+  pinnedFolders: [],
   activities: [],
   // Keyed by absolute folder path: { [folderPath]: { scannedAt: number, repos: Repo[] } }
   scanCache: {},
@@ -29,6 +37,7 @@ const mergeStore = (data) => {
     watchedFolders: Array.isArray(data.watchedFolders)
       ? data.watchedFolders
       : [],
+    pinnedFolders: Array.isArray(data.pinnedFolders) ? data.pinnedFolders : [],
     activities: Array.isArray(data.activities) ? data.activities : [],
     scanCache:
       data.scanCache && typeof data.scanCache === "object"
@@ -288,6 +297,12 @@ ipcMain.handle("get-remote-url", async (event, repoPath) => {
 ipcMain.handle("open-in-browser", async (event, url) => {
   if (url) {
     shell.openExternal(url);
+  }
+});
+
+ipcMain.handle("send-notification", (event, { title, body }) => {
+  if (Notification.isSupported()) {
+    new Notification({ title, body }).show();
   }
 });
 

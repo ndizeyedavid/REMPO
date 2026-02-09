@@ -1,9 +1,12 @@
-import { Folder, ScanLine, Settings, RefreshCcw } from "lucide-react";
+import { Folder, ScanLine, Settings, RefreshCcw, MoreVertical, Pin, Trash2, PinOff } from "lucide-react";
 
 export default function Sidebar({
     watchedFolders = [],
+    pinnedFolders = [],
     onScanProjects,
     onRefreshProjects,
+    onPinFolder,
+    onRemoveFolder,
     primaryActionVariant,
     onSettings,
     onFolderClick,
@@ -11,6 +14,14 @@ export default function Sidebar({
     subtitle = "Remember what you were building",
 }) {
     const resolvedVariant = primaryActionVariant || "scan";
+
+    // Sort: Pinned first, then by watchedFolders order
+    const allFolders = [
+        ...pinnedFolders.map(p => ({ path: p, isPinned: true })),
+        ...watchedFolders
+            .filter(w => !pinnedFolders.includes(w))
+            .map(w => ({ path: w, isPinned: false }))
+    ];
 
     return (
         <aside className="flex h-screen w-80 flex-col border-r border-base-content/10 bg-base-300 text-base-content">
@@ -59,23 +70,51 @@ export default function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar px-1">
-                    {watchedFolders.length > 0 ? (
+                    {allFolders.length > 0 ? (
                         <ul className="menu menu-sm w-full gap-1">
-                            {watchedFolders.map((path) => (
-                                <li key={path}>
-                                    <button
-                                        type="button"
-                                        className="justify-start gap-3 rounded-xl hover:bg-base-content/5 py-3 group"
-                                        onClick={() => onFolderClick?.(path)}
-                                    >
-                                        <div className="p-1.5 rounded-lg bg-base-content/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                            <Folder className="size-4 opacity-70" />
+                            {allFolders.map(({ path, isPinned }) => (
+                                <li key={path} className="group relative">
+                                    <div className="flex items-center p-0">
+                                        <button
+                                            type="button"
+                                            className="flex justify-start gap-3 rounded-xl hover:bg-base-content/5 py-3 px-3 w-full"
+                                            onClick={() => onFolderClick?.(path)}
+                                        >
+                                            <div className="p-1.5 px-2 flex items-center justify-center rounded-lg bg-base-content/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors relative">
+                                                <Folder className="size-4.5 opacity-70" />
+                                                {isPinned && (
+                                                    <Pin className="size-2 absolute -top-0.5 -right-0.5 text-primary fill-primary" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col justify-start text-left">
+                                                <p className="truncate font-medium">{path.split(/[\\/]/).pop()}</p>
+                                                <p className="truncate text-[10px] opacity-40">{path}</p>
+                                            </div>
+                                        </button>
+
+                                        {/* Hover Menu */}
+                                        <div div className="dropdown dropdown-left absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity" >
+                                            <button tabIndex={0} className="btn btn-ghost btn-xs btn-square">
+                                                <MoreVertical className="size-4" />
+                                            </button>
+                                            <ul tabIndex={0} className="dropdown-content z-1 menu p-2 shadow bg-base-200 rounded-box w-40 border border-base-content/10">
+                                                <li>
+                                                    <button onClick={() => onPinFolder?.(path)}>
+                                                        {isPinned ? (
+                                                            <><PinOff className="size-4" /> Unpin</>
+                                                        ) : (
+                                                            <><Pin className="size-4" /> Pin Folder</>
+                                                        )}
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button onClick={() => onRemoveFolder?.(path)} className="text-error">
+                                                        <Trash2 className="size-4" /> Remove
+                                                    </button>
+                                                </li>
+                                            </ul>
                                         </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate font-medium">{path.split(/[\\/]/).pop()}</p>
-                                            <p className="truncate text-[10px] opacity-40">{path}</p>
-                                        </div>
-                                    </button>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
@@ -84,9 +123,10 @@ export default function Sidebar({
                             <Folder className="size-8 mb-2" />
                             <p className="text-xs">No recently scanned folders</p>
                         </div>
-                    )}
-                </div>
-            </div>
+                    )
+                    }
+                </div >
+            </div >
 
             <div className="divider m-0" />
 
@@ -100,6 +140,6 @@ export default function Sidebar({
                     Settings
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 }

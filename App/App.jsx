@@ -14,6 +14,7 @@ export default function App() {
     const [theme, setTheme] = useState("light")
     const [scannedRepos, setScannedRepos] = useState([])
     const [watchedFolders, setWatchedFolders] = useState([])
+    const [pinnedFolders, setPinnedFolders] = useState([])
     const [scanCache, setScanCache] = useState({})
     const [activeFolderPath, setActiveFolderPath] = useState(null)
     const [activities, setActivities] = useState([])
@@ -25,6 +26,7 @@ export default function App() {
                 const store = await window.electronAPI.getStore();
                 if (store.theme) setTheme(store.theme);
                 if (store.watchedFolders) setWatchedFolders(store.watchedFolders);
+                if (store.pinnedFolders) setPinnedFolders(store.pinnedFolders);
                 if (store.scanCache) setScanCache(store.scanCache);
                 if (store.activities) setActivities(store.activities);
                 if (store.lastScannedFolder) {
@@ -115,6 +117,13 @@ export default function App() {
                     clearInterval(interval);
                     // console.log(repos);
                     setScannedRepos(repos);
+
+                    // Send notification
+                    window.electronAPI.sendNotification({
+                        title: "Scan Complete",
+                        body: `Successfully scanned ${repos.length} repositories in ${folderPath.split(/[\\/]/).pop()}`
+                    });
+
                     setTimeout(() => {
                         setView("dashboard");
                     }, 500);
@@ -137,6 +146,42 @@ export default function App() {
         setScanProgress({ folders: 0, repos: 0 })
     }
 
+    const handlePinFolder = async (folderPath) => {
+        let newPinned;
+        if (pinnedFolders.includes(folderPath)) {
+            newPinned = pinnedFolders.filter(f => f !== folderPath);
+        } else {
+            newPinned = [folderPath, ...pinnedFolders];
+        }
+        setPinnedFolders(newPinned);
+        await window.electronAPI.updateStore("pinnedFolders", newPinned);
+        toast.success(pinnedFolders.includes(folderPath) ? "Folder unpinned" : "Folder pinned");
+    };
+
+    const handleRemoveFolder = async (folderPath) => {
+        const newWatched = watchedFolders.filter(f => f !== folderPath);
+        const newPinned = pinnedFolders.filter(f => f !== folderPath);
+
+        setWatchedFolders(newWatched);
+        setPinnedFolders(newPinned);
+
+        await window.electronAPI.updateStore("watchedFolders", newWatched);
+        await window.electronAPI.updateStore("pinnedFolders", newPinned);
+
+        // Optionally clear cache for this folder
+        const nextCache = { ...scanCache };
+        delete nextCache[folderPath];
+        setScanCache(nextCache);
+        await window.electronAPI.updateStore("scanCache", nextCache);
+
+        if (activeFolderPath === folderPath) {
+            setView("welcome");
+            setActiveFolderPath(null);
+        }
+
+        toast.success("Folder removed from history");
+    };
+
     const logActivity = async (activity) => {
         const newActivity = {
             id: Date.now().toString(),
@@ -155,6 +200,9 @@ export default function App() {
                 onRefreshProjects={handleRefreshScan}
                 onSettings={() => setIsSettingsOpen(true)}
                 watchedFolders={watchedFolders}
+                pinnedFolders={pinnedFolders}
+                onPinFolder={handlePinFolder}
+                onRemoveFolder={handleRemoveFolder}
                 onFolderClick={(path) => handleStartScan(path)}
                 primaryActionVariant={view === "dashboard" && activeFolderPath ? "refresh" : "scan"}
             />
