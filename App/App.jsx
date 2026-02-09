@@ -14,6 +14,7 @@ export default function App() {
     const [theme, setTheme] = useState("light")
     const [scannedRepos, setScannedRepos] = useState([])
     const [watchedFolders, setWatchedFolders] = useState([])
+    const [scanCache, setScanCache] = useState({})
 
     // Load initial data from store
     useEffect(() => {
@@ -22,6 +23,7 @@ export default function App() {
                 const store = await window.electronAPI.getStore();
                 if (store.theme) setTheme(store.theme);
                 if (store.watchedFolders) setWatchedFolders(store.watchedFolders);
+                if (store.scanCache) setScanCache(store.scanCache);
                 if (store.lastScannedFolder) {
                     console.log("Last scanned folder:", store.lastScannedFolder);
                 }
@@ -41,7 +43,7 @@ export default function App() {
         }
     };
 
-    const handleStartScan = async (folderPathInput = null) => {
+    const handleStartScan = async (folderPathInput = null, options = {}) => {
         if (view === "scanning") return
 
         try {
@@ -50,6 +52,16 @@ export default function App() {
                 folderPath = await window.electronAPI.selectFolder();
             }
             if (!folderPath) return;
+
+            const shouldUseCache = options.useCache !== false;
+            const cached = shouldUseCache ? scanCache?.[folderPath] : null;
+            if (cached?.repos && Array.isArray(cached.repos) && cached.repos.length > 0) {
+                setScannedRepos(cached.repos);
+                setView("dashboard");
+                // Still update last scanned folder for UX
+                await window.electronAPI.updateStore("lastScannedFolder", folderPath);
+                return;
+            }
 
             // Update watched folders if it's new
             if (!watchedFolders.includes(folderPath)) {
@@ -66,6 +78,17 @@ export default function App() {
 
             // Actual scan
             const repos = await window.electronAPI.scanRepos(folderPath);
+
+            // Cache scan results
+            const nextCache = {
+                ...(scanCache || {}),
+                [folderPath]: {
+                    scannedAt: Date.now(),
+                    repos,
+                },
+            };
+            setScanCache(nextCache);
+            await window.electronAPI.updateStore("scanCache", nextCache);
 
             // Simulation-like progress but based on actual results
             let folders = 0;

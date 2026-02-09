@@ -8,25 +8,54 @@ const simpleGit = require("simple-git");
 // Data Store Setup
 const STORE_PATH = path.join(app.getPath("userData"), "store.json");
 
+const DEFAULT_STORE = {
+  theme: "light",
+  lastScannedFolder: null,
+  watchedFolders: [],
+  // Keyed by absolute folder path: { [folderPath]: { scannedAt: number, repos: Repo[] } }
+  scanCache: {},
+  aiResponses: {},
+  settings: {},
+};
+
+const mergeStore = (data) => {
+  if (!data || typeof data !== "object") return { ...DEFAULT_STORE };
+
+  return {
+    ...DEFAULT_STORE,
+    ...data,
+    watchedFolders: Array.isArray(data.watchedFolders)
+      ? data.watchedFolders
+      : [],
+    scanCache:
+      data.scanCache && typeof data.scanCache === "object"
+        ? data.scanCache
+        : {},
+    aiResponses:
+      data.aiResponses && typeof data.aiResponses === "object"
+        ? data.aiResponses
+        : {},
+    settings:
+      data.settings && typeof data.settings === "object" ? data.settings : {},
+  };
+};
+
 const loadStore = () => {
   try {
     if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, "utf-8"));
+      const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf-8"));
+      return mergeStore(parsed);
     }
   } catch (err) {
     console.error("Error loading store:", err);
   }
-  return {
-    theme: "light",
-    lastScannedFolder: null,
-    aiResponses: {},
-    settings: {},
-  };
+
+  return mergeStore(null);
 };
 
 const saveStore = (data) => {
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2));
+    fs.writeFileSync(STORE_PATH, JSON.stringify(mergeStore(data), null, 2));
   } catch (err) {
     console.error("Error saving store:", err);
   }
