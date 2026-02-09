@@ -2,20 +2,28 @@ import React, { useState, useEffect } from "react";
 import {
   X, Folder, GitBranch, Sparkles, GitCommit,
   ExternalLink, FileCode, Clock, ChevronRight,
-  Loader2
+  Loader2, Github
 } from "lucide-react";
+import CommitModal from "./CommitModal";
+import toast from "react-hot-toast";
 
 export default function ProjectDetailsDrawer({ project, onClose }) {
   const [details, setDetails] = useState({ commits: [], files: [] });
   const [loading, setLoading] = useState(true);
+  const [isCommitModalOpen, setIsCommitModalOpen] = useState(false);
+  const [remoteUrl, setRemoteUrl] = useState(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
       if (!project?.path) return;
       setLoading(true);
       try {
-        const data = await window.electronAPI.getRepoDetails(project.path);
-        setDetails(data);
+        const [repoData, url] = await Promise.all([
+          window.electronAPI.getRepoDetails(project.path),
+          window.electronAPI.getRemoteUrl(project.path)
+        ]);
+        setDetails(repoData);
+        setRemoteUrl(url);
       } catch (error) {
         console.error("Failed to load repo details:", error);
       } finally {
@@ -25,6 +33,36 @@ export default function ProjectDetailsDrawer({ project, onClose }) {
 
     fetchDetails();
   }, [project?.path]);
+
+  const handleOpenGithub = () => {
+    if (remoteUrl) {
+      window.electronAPI.openInBrowser(remoteUrl);
+    } else {
+      toast.error("No remote URL found for this repository");
+    }
+  };
+
+  const handleCommitConfirm = async ({ branchName, commitMessage }) => {
+    try {
+      const result = await window.electronAPI.commitAndPush({
+        repoPath: project.path,
+        branchName,
+        commitMessage
+      });
+
+      if (result.success) {
+        toast.success(`Successfully pushed to branch ${branchName}`);
+        // Refresh details after success
+        const data = await window.electronAPI.getRepoDetails(project.path);
+        setDetails(data);
+      } else {
+        toast.error(`Failed to commit: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Commit flow failed:", error);
+      toast.error("An unexpected error occurred during commit");
+    }
+  };
 
   if (!project) return null;
 
@@ -63,12 +101,23 @@ export default function ProjectDetailsDrawer({ project, onClose }) {
               <p className="text-xs opacity-40 font-mono">{project.path}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-sm btn-square opacity-60 hover:opacity-100"
-          >
-            <X className="size-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {remoteUrl && (
+              <button
+                onClick={handleOpenGithub}
+                className="btn btn-ghost btn-sm btn-square opacity-60 hover:opacity-100 text-primary"
+                title="Open on GitHub"
+              >
+                <Github className="size-5" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="btn btn-ghost btn-sm btn-square opacity-60 hover:opacity-100"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Content */}
@@ -157,16 +206,29 @@ export default function ProjectDetailsDrawer({ project, onClose }) {
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-base-content/10 grid grid-cols-2 gap-4 bg-base-300">
-          <button className="btn btn-ghost bg-base-content/5 border-base-content/10 rounded-xl gap-2 font-medium">
+          <button
+            onClick={() => setIsCommitModalOpen(true)}
+            className="btn btn-ghost bg-base-content/5 border-base-content/10 rounded-xl gap-2 font-medium"
+          >
             <GitCommit className="size-4" />
             Commit Changes
           </button>
-          <button className="btn btn-primary rounded-xl gap-2 font-medium">
+          <button
+            onClick={() => window.electronAPI.openInEditor(project.path)}
+            className="btn btn-primary rounded-xl gap-2 font-medium"
+          >
             <ExternalLink className="size-4" />
             Open in Editor
           </button>
         </div>
       </div>
+
+      <CommitModal
+        isOpen={isCommitModalOpen}
+        onClose={() => setIsCommitModalOpen(false)}
+        onConfirm={handleCommitConfirm}
+        repoName={project.name}
+      />
     </>
   );
 }

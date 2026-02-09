@@ -234,6 +234,61 @@ ipcMain.handle("get-repo-details", async (event, repoPath) => {
   }
 });
 
+ipcMain.handle(
+  "commit-and-push",
+  async (event, { repoPath, branchName, commitMessage }) => {
+    try {
+      const git = simpleGit(repoPath);
+
+      // 1. Create and checkout new branch
+      await git.checkoutLocalBranch(branchName);
+
+      // 2. Add all changes
+      await git.add(".");
+
+      // 3. Commit
+      await git.commit(commitMessage);
+
+      // 4. Push to origin head
+      await git.push("origin", branchName, ["--set-upstream"]);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Git operation failed:", error);
+      return { success: false, error: error.message };
+    }
+  }
+);
+
+ipcMain.handle("get-remote-url", async (event, repoPath) => {
+  try {
+    const git = simpleGit(repoPath);
+    const remotes = await git.getRemotes(true);
+    const origin = remotes.find((r) => r.name === "origin") || remotes[0];
+    if (!origin) return null;
+
+    let url = origin.refs.fetch || origin.refs.push;
+    // Convert SSH URL to HTTPS for browser opening
+    if (url.startsWith("git@github.com:")) {
+      url = url
+        .replace("git@github.com:", "https://github.com/")
+        .replace(/\.git$/, "");
+    } else if (url.endsWith(".git")) {
+      url = url.replace(/\.git$/, "");
+    }
+    return url;
+  } catch (error) {
+    console.error("Failed to get remote URL:", error);
+    return null;
+  }
+});
+
+ipcMain.handle("open-in-browser", async (event, url) => {
+  if (url) {
+    shell.openExternal(url);
+  }
+});
+
 ipcMain.handle("open-in-editor", async (event, repoPath) => {
   // Try common editors or use system default
   const editors = ["code", "cursor", "subl"];
