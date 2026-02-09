@@ -30,7 +30,7 @@ export default function WelcomeState({ onStartScan }) {
         </button>
       </div>
 
-      <div className="mt-10 grid grid-cols-3 gap-8">
+      {/* <div className="mt-10 grid grid-cols-3 gap-8">
         <div className="text-center">
           <div className="mx-auto mb-2 flex items-center justify-center gap-2 text-base-content">
             <Infinity className="size-5 opacity-80" />
@@ -50,7 +50,7 @@ export default function WelcomeState({ onStartScan }) {
           </div>
           <div className="text-xs opacity-70">Instant Context</div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

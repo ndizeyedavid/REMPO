@@ -5,6 +5,35 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const simpleGit = require("simple-git");
 
+// Data Store Setup
+const STORE_PATH = path.join(app.getPath("userData"), "store.json");
+
+const loadStore = () => {
+  try {
+    if (fs.existsSync(STORE_PATH)) {
+      return JSON.parse(fs.readFileSync(STORE_PATH, "utf-8"));
+    }
+  } catch (err) {
+    console.error("Error loading store:", err);
+  }
+  return {
+    theme: "light",
+    lastScannedFolder: null,
+    aiResponses: {},
+    settings: {},
+  };
+};
+
+const saveStore = (data) => {
+  try {
+    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error("Error saving store:", err);
+  }
+};
+
+let store = loadStore();
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -94,6 +123,15 @@ ipcMain.handle("open-in-editor", async (event, repoPath) => {
     } catch (e) {}
   }
   return shell.openPath(repoPath);
+});
+
+// Store Handlers
+ipcMain.handle("get-store", () => store);
+
+ipcMain.handle("update-store", (event, key, value) => {
+  store[key] = value;
+  saveStore(store);
+  return store;
 });
 
 // This method will be called when Electron has finished

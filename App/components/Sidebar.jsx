@@ -1,9 +1,10 @@
 import { Folder, ScanLine, Settings } from "lucide-react";
 
 export default function Sidebar({
-    watchedFolders = ["~/Projects", "~/Code", "~/Development"],
+    watchedFolders = [],
     onScanProjects,
     onSettings,
+    onFolderClick,
     title = "Rempo",
     subtitle = "Remember what you were building",
 }) {
@@ -25,7 +26,7 @@ export default function Sidebar({
                 <div className="px-5 py-4">
                     <button
                         type="button"
-                        className="btn btn-primary btn-block rounded-full"
+                        className="btn btn-primary btn-block rounded-full shadow-lg shadow-primary/20"
                         onClick={onScanProjects}
                     >
                         <ScanLine className="size-5" />
@@ -36,20 +37,38 @@ export default function Sidebar({
 
 
             <div className="flex min-h-0 flex-1 flex-col px-2">
-                <div className="px-3 pb-2 text-xs font-semibold tracking-wide opacity-70">
-                    Watched Folders
+                <div className="px-3 pb-2 text-xs font-bold uppercase tracking-widest opacity-40">
+                    Recent Folders
                 </div>
 
-                <ul className="menu menu-sm w-full flex-1 overflow-y-auto px-1">
-                    {watchedFolders.map((path) => (
-                        <li key={path}>
-                            <button type="button" className="justify-start gap-3 rounded-xl">
-                                <Folder className="size-4 opacity-70" />
-                                <span className="truncate">{path}</span>
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-1">
+                    {watchedFolders.length > 0 ? (
+                        <ul className="menu menu-sm w-full gap-1">
+                            {watchedFolders.map((path) => (
+                                <li key={path}>
+                                    <button
+                                        type="button"
+                                        className="justify-start gap-3 rounded-xl hover:bg-base-content/5 py-3 group"
+                                        onClick={() => onFolderClick?.(path)}
+                                    >
+                                        <div className="p-1.5 rounded-lg bg-base-content/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                            <Folder className="size-4 opacity-70" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate font-medium">{path.split(/[\\/]/).pop()}</p>
+                                            <p className="truncate text-[10px] opacity-40">{path}</p>
+                                        </div>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-10 opacity-30 text-center px-4">
+                            <Folder className="size-8 mb-2" />
+                            <p className="text-xs">No recently scanned folders</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="divider m-0" />

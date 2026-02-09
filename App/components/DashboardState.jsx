@@ -71,7 +71,7 @@ export default function DashboardState({ projects: initialProjects }) {
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-base-100">
-      <DashboardStats />
+      <DashboardStats projects={projects} />
 
       <div className="flex flex-col lg:flex-row gap-8 mt-8">
         {/* Main Section */}
