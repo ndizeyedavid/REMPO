@@ -7,7 +7,7 @@ import {
 import CommitModal from "./CommitModal";
 import toast from "react-hot-toast";
 
-export default function ProjectDetailsDrawer({ project, onClose }) {
+export default function ProjectDetailsDrawer({ project, onClose, onLogActivity }) {
   const [details, setDetails] = useState({ commits: [], files: [] });
   const [loading, setLoading] = useState(true);
   const [isCommitModalOpen, setIsCommitModalOpen] = useState(false);
@@ -52,6 +52,16 @@ export default function ProjectDetailsDrawer({ project, onClose }) {
 
       if (result.success) {
         toast.success(`Successfully pushed to branch ${branchName}`);
+
+        // Log activity
+        if (onLogActivity) {
+          onLogActivity({
+            project: project.name,
+            action: `Pushed to ${branchName}`,
+            type: 'push'
+          });
+        }
+
         // Refresh details after success
         const data = await window.electronAPI.getRepoDetails(project.path);
         setDetails(data);

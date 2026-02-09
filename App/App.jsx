@@ -16,6 +16,7 @@ export default function App() {
     const [watchedFolders, setWatchedFolders] = useState([])
     const [scanCache, setScanCache] = useState({})
     const [activeFolderPath, setActiveFolderPath] = useState(null)
+    const [activities, setActivities] = useState([])
 
     // Load initial data from store
     useEffect(() => {
@@ -25,6 +26,7 @@ export default function App() {
                 if (store.theme) setTheme(store.theme);
                 if (store.watchedFolders) setWatchedFolders(store.watchedFolders);
                 if (store.scanCache) setScanCache(store.scanCache);
+                if (store.activities) setActivities(store.activities);
                 if (store.lastScannedFolder) {
                     console.log("Last scanned folder:", store.lastScannedFolder);
                 }
@@ -82,6 +84,13 @@ export default function App() {
             // Actual scan
             const repos = await window.electronAPI.scanRepos(folderPath);
 
+            // Log activity
+            await logActivity({
+                project: folderPath.split(/[\\/]/).pop(),
+                action: `Scanned folder for projects`,
+                type: 'scan'
+            });
+
             // Cache scan results
             const nextCache = {
                 ...(scanCache || {}),
@@ -128,6 +137,17 @@ export default function App() {
         setScanProgress({ folders: 0, repos: 0 })
     }
 
+    const logActivity = async (activity) => {
+        const newActivity = {
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+            ...activity
+        };
+        const updatedActivities = [newActivity, ...activities].slice(0, 50);
+        setActivities(updatedActivities);
+        await window.electronAPI.updateStore("activities", updatedActivities);
+    };
+
     return (
         <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden" data-theme={theme}>
             <Sidebar
@@ -160,6 +180,8 @@ export default function App() {
                         {view === "dashboard" && (
                             <DashboardState
                                 projects={scannedRepos}
+                                activities={activities}
+                                onLogActivity={logActivity}
                             />
                         )}
                     </div>

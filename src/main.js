@@ -13,6 +13,7 @@ const DEFAULT_STORE = {
   theme: "light",
   lastScannedFolder: null,
   watchedFolders: [],
+  activities: [],
   // Keyed by absolute folder path: { [folderPath]: { scannedAt: number, repos: Repo[] } }
   scanCache: {},
   aiResponses: {},
@@ -28,6 +29,7 @@ const mergeStore = (data) => {
     watchedFolders: Array.isArray(data.watchedFolders)
       ? data.watchedFolders
       : [],
+    activities: Array.isArray(data.activities) ? data.activities : [],
     scanCache:
       data.scanCache && typeof data.scanCache === "object"
         ? data.scanCache
