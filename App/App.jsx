@@ -49,6 +49,15 @@ export default function App() {
             } catch (error) {
                 console.error("Failed to load store:", error);
             }
+
+            // Hide loading screen after initialization
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 300);
+            }
         };
         initStore();
     }, []);

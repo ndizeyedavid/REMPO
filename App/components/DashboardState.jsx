@@ -230,6 +230,9 @@ export default function DashboardState({ projects: initialProjects, activities, 
           project={selectedProject}
           onClose={handleCloseDrawer}
           onLogActivity={onLogActivity}
+          aiSettings={aiSettings}
+          aiResponses={aiResponses}
+          onTriggerSummary={onTriggerSummary}
         />
       )}
     </div>

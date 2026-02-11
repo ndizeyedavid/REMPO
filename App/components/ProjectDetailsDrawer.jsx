@@ -7,11 +7,13 @@ import {
 import CommitModal from "./CommitModal";
 import toast from "react-hot-toast";
 
-export default function ProjectDetailsDrawer({ project, onClose, onLogActivity }) {
+export default function ProjectDetailsDrawer({ project, onClose, onLogActivity, aiSettings, aiResponses, onTriggerSummary }) {
   const [details, setDetails] = useState({ commits: [], files: [] });
   const [loading, setLoading] = useState(true);
   const [isCommitModalOpen, setIsCommitModalOpen] = useState(false);
   const [remoteUrl, setRemoteUrl] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -33,6 +35,32 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity }
 
     fetchDetails();
   }, [project?.path]);
+
+  const aiEnabled = !!aiSettings?.enabled;
+  const aiHasKey = !!aiSettings?.apiKey;
+  const aiSummary = project?.path ? aiResponses?.[project.path] : null;
+
+  const triggerSummary = async () => {
+    if (!project?.path) return;
+    if (!aiEnabled || !aiHasKey) return;
+    if (aiSummary) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      await onTriggerSummary?.(project.path);
+    } catch (e) {
+      setAiError(String(e?.message || e));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!project?.path) return;
+    triggerSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.path, aiEnabled, aiHasKey]);
 
   const handleOpenGithub = () => {
     if (remoteUrl) {
@@ -150,9 +178,52 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity }
               <Sparkles className="size-4" />
               AI Context Summary
             </div>
-            <p className="text-sm leading-relaxed opacity-80">
-              {project.summary}
-            </p>
+            {aiEnabled ? (
+              aiHasKey ? (
+                <>
+                  {aiSummary ? (
+                    <p className="text-sm leading-relaxed opacity-80">{aiSummary}</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm leading-relaxed opacity-60">
+                        {aiLoading ? "Generating summary..." : "No summary yet."}
+                      </p>
+                      {aiError && (
+                        <div className="text-xs bg-error/10 border border-error/20 rounded-xl p-3">
+                          {aiError}
+                        </div>
+                      )}
+                      <button
+                        className="btn btn-xs btn-primary rounded-lg"
+                        onClick={() => {
+                          setAiError(null);
+                          setAiLoading(false);
+                          onTriggerSummary?.(project.path);
+                        }}
+                        disabled={aiLoading}
+                      >
+                        {aiLoading ? (
+                          <>
+                            <Loader2 className="size-3 animate-spin" />
+                            Generating
+                          </>
+                        ) : (
+                          "Generate"
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm leading-relaxed opacity-60">
+                  Add your Groq API key in Settings to enable summaries.
+                </p>
+              )
+            ) : (
+              <p className="text-sm leading-relaxed opacity-60">
+                AI summaries are disabled in Settings.
+              </p>
+            )}
           </div>
 
           {/* Recent Commits */}
