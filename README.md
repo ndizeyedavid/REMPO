@@ -2,15 +2,21 @@
 
 > **Re**member what you were building. A beautiful dashboard for your global git ecosystem.
 
-[![Version](https://img.shields.io/badge/version-1.0.4--beta-blue)](https://github.com/ndizeyedavid/REMPO/releases)
+[![Version](https://img.shields.io/badge/version-0.0.4--beta-blue)](https://github.com/ndizeyedavid/REMPO/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Electron](https://img.shields.io/badge/built%20with-Electron-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/built%20with-React-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
 
 <div align="center">
-  
-  ![REMPO Screenshot](public/favicon.ico)
-  
+
+![REMPO Logo](public/favicon.ico)
+
+  <br />
+
+  <a href="https://github.com/ndizeyedavid/REMPO/releases/latest">
+    <img src="https://img.shields.io/badge/Download%20Latest%20Version-2ea44f?style=for-the-badge&logo=windows&logoColor=white" alt="Download Latest" />
+  </a>
+
 </div>
 
 ## Overview
@@ -53,11 +59,21 @@ REMPO is a sleek, modern desktop application built with Electron and React that 
 - **Custom Window Chrome** - Frameless window with custom title bar
 - **Windows Taskbar** - Proper icon grouping with AppUserModelID
 
-## Installation
+## Download
 
-### Download
+### Latest Release (Recommended)
 
-Download the latest release from the [Releases](https://github.com/ndizeyedavid/REMPO/releases) page.
+**[⬇️ Download Latest Version for Windows](https://github.com/ndizeyedavid/REMPO/releases/latest)**
+
+The latest stable release includes:
+
+- Windows installer (.exe)
+- Auto-updater support
+- All features and bug fixes
+
+### All Releases
+
+View all releases on the [Releases Page](https://github.com/ndizeyedavid/REMPO/releases).
 
 ### Build from Source
 
@@ -136,6 +152,7 @@ REMPO/
 │   └── assets/               # Icons and images
 ├── public/                   # Static assets
 ├── .github/                  # GitHub templates and workflows
+│   ├── workflows/            # CI/CD workflows
 │   └── ISSUE_TEMPLATE/       # Bug report and feature request templates
 ├── index.html                # Renderer entry HTML
 ├── forge.config.js           # Electron Forge configuration
@@ -175,6 +192,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 Found a bug? Please use our [Bug Report Template](https://github.com/ndizeyedavid/REMPO/issues/new?template=bug_report.yml) to create a detailed issue.
 
 Have a feature idea? Use our [Feature Request Template](https://github.com/ndizeyedavid/REMPO/issues/new?template=feature_request.yml).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 
 ## Developer
 
