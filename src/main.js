@@ -10,7 +10,7 @@ const path = require("node:path");
 const started = require("electron-squirrel-startup");
 const { exec, execFile } = require("child_process");
 const fs = require("fs");
-const pty = require("node-pty");
+const Groq = require("groq-sdk");
 const simpleGit = require("simple-git");
 const ignore = require("ignore");
 
@@ -26,13 +26,21 @@ const DEFAULT_STORE = {
   // Keyed by absolute folder path: { [folderPath]: { scannedAt: number, repos: Repo[] } }
   scanCache: {},
   aiResponses: {},
-  settings: {},
+  settings: {
+    ai: {
+      enabled: true,
+      autoSummarizeOnScan: true,
+      verbosity: 70,
+      provider: "groq",
+      apiKey: "",
+    },
+  },
 };
 
 const mergeStore = (data) => {
   if (!data || typeof data !== "object") return { ...DEFAULT_STORE };
 
-  return {
+  const merged = {
     ...DEFAULT_STORE,
     ...data,
     watchedFolders: Array.isArray(data.watchedFolders)
@@ -48,9 +56,19 @@ const mergeStore = (data) => {
       data.aiResponses && typeof data.aiResponses === "object"
         ? data.aiResponses
         : {},
-    settings:
-      data.settings && typeof data.settings === "object" ? data.settings : {},
   };
+
+  // Deep merge settings
+  merged.settings = {
+    ...DEFAULT_STORE.settings,
+    ...(data.settings || {}),
+    ai: {
+      ...DEFAULT_STORE.settings.ai,
+      ...(data.settings?.ai || {}),
+    },
+  };
+
+  return merged;
 };
 
 const loadStore = () => {
@@ -75,51 +93,6 @@ const saveStore = (data) => {
 };
 
 let store = loadStore();
-
-const ptys = new Map();
-
-const resolveGitBashPath = () => {
-  const envPath = process.env.GIT_BASH_PATH;
-  if (envPath && fs.existsSync(envPath)) return envPath;
-
-  if (process.platform !== "win32") return null;
-
-  const candidates = [
-    path.join(process.env.ProgramFiles || "", "Git", "bin", "bash.exe"),
-    path.join(process.env.ProgramFiles || "", "Git", "usr", "bin", "bash.exe"),
-    path.join(process.env["ProgramFiles(x86)"] || "", "Git", "bin", "bash.exe"),
-    path.join(
-      process.env["ProgramFiles(x86)"] || "",
-      "Git",
-      "usr",
-      "bin",
-      "bash.exe"
-    ),
-    path.join(
-      process.env.LocalAppData || "",
-      "Programs",
-      "Git",
-      "bin",
-      "bash.exe"
-    ),
-    path.join(
-      process.env.LocalAppData || "",
-      "Programs",
-      "Git",
-      "usr",
-      "bin",
-      "bash.exe"
-    ),
-  ].filter(Boolean);
-
-  for (const c of candidates) {
-    try {
-      if (c && fs.existsSync(c)) return c;
-    } catch (e) {}
-  }
-
-  return null;
-};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -189,62 +162,61 @@ ipcMain.handle("window-is-maximized", (event) => {
   return !!win?.isMaximized();
 });
 
-ipcMain.handle("pty-create", (event, { cwd, cols, rows }) => {
-  const shellPath = resolveGitBashPath();
-  if (!shellPath) {
-    return {
-      ok: false,
-      error: "Git Bash not found. Set GIT_BASH_PATH env var to bash.exe.",
-    };
-  }
-
-  const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const p = pty.spawn(shellPath, ["--login", "-i"], {
-    name: "xterm-256color",
-    cols: typeof cols === "number" ? cols : 80,
-    rows: typeof rows === "number" ? rows : 24,
-    cwd: cwd && typeof cwd === "string" ? cwd : process.cwd(),
-    env: { ...process.env },
-  });
-
-  p.onData((data) => {
-    try {
-      event.sender.send("pty-data", { id, data });
-    } catch (e) {}
-  });
-
-  p.onExit(() => {
-    ptys.delete(id);
-    try {
-      event.sender.send("pty-exit", { id });
-    } catch (e) {}
-  });
-
-  ptys.set(id, p);
-  return { ok: true, id };
-});
-
-ipcMain.handle("pty-write", (event, { id, data }) => {
-  const p = ptys.get(id);
-  if (!p) return;
-  if (typeof data !== "string") return;
-  p.write(data);
-});
-
-ipcMain.handle("pty-resize", (event, { id, cols, rows }) => {
-  const p = ptys.get(id);
-  if (!p) return;
-  if (typeof cols !== "number" || typeof rows !== "number") return;
-  p.resize(cols, rows);
-});
-
-ipcMain.handle("pty-dispose", (event, { id }) => {
-  const p = ptys.get(id);
-  if (!p) return;
+ipcMain.handle("generate-summary", async (event, { repoPath }) => {
   try {
-    p.kill();
-  } catch (e) {}
-  ptys.delete(id);
+    const aiSettings = store.settings?.ai;
+    if (!aiSettings?.enabled || !aiSettings?.apiKey) {
+      return { ok: false, error: "AI is disabled or API key is missing" };
+    }
+
+    if (store.aiResponses[repoPath]) {
+      return { ok: true, summary: store.aiResponses[repoPath] };
+    }
+
+    const groq = new Groq({ apiKey: aiSettings.apiKey });
+    const git = simpleGit(repoPath);
+
+    // Get repo context for summary
+    const [status, log, branch] = await Promise.all([
+      git.status(),
+      git.log({ maxCount: 5 }),
+      git.revparse(["--abbrev-ref", "HEAD"]),
+    ]);
+
+    const fileList = status.files
+      .slice(0, 10)
+      .map((f) => f.path)
+      .join(", ");
+    const recentCommits = log.all.map((c) => c.message).join("\n");
+
+    const prompt = `Summarize this git repository concisely (max 3 sentences).
+Project Name: ${path.basename(repoPath)}
+Current Branch: ${branch}
+Recent Files: ${fileList}
+Recent Commits:
+${recentCommits}
+
+Focus on the current state and purpose of the project.`;
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.5,
+      max_tokens: 150,
+    });
+
+    const summary =
+      chatCompletion.choices[0]?.message?.content || "No summary generated.";
+
+    // Cache response
+    store.aiResponses[repoPath] = summary;
+    saveStore(store);
+
+    return { ok: true, summary };
+  } catch (error) {
+    console.error("AI Summary Error:", error);
+    return { ok: false, error: error.message };
+  }
 });
 
 ipcMain.handle("scan-repos", async (event, rootPath) => {

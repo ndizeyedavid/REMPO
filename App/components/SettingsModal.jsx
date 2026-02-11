@@ -5,8 +5,29 @@ import {
   Moon, Sun, Monitor, Languages, Terminal
 } from "lucide-react";
 
-export default function SettingsModal({ onClose, currentTheme, onThemeChange }) {
+export default function SettingsModal({ onClose, currentTheme, onThemeChange, settings, onSettingsUpdate }) {
   const [activeTab, setActiveTab] = useState("personalization");
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  const handleToggleAi = (enabled) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, enabled } };
+    setLocalSettings(next);
+  };
+
+  const handleToggleAutoSummarize = (autoSummarizeOnScan) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, autoSummarizeOnScan } };
+    setLocalSettings(next);
+  };
+
+  const handleApiKeyChange = (apiKey) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, apiKey } };
+    setLocalSettings(next);
+  };
+
+  const handleSave = () => {
+    onSettingsUpdate("settings", localSettings);
+    onClose();
+  };
 
   const themes = [
     { id: "light", label: "Light Mode", icon: Sun, color: "bg-slate-50", textColor: "text-slate-900" },
@@ -137,22 +158,45 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
 
                   <div className="form-control w-full">
                     <label className="label">
-                      <span className="label-text font-bold">Summary Verbosity</span>
+                      <span className="label-text font-bold">Groq API Key</span>
                     </label>
-                    <input type="range" min="0" max="100" value="70" className="range range-primary range-sm" />
-                    <div className="w-full flex justify-between text-xs px-2 mt-2 opacity-40 uppercase font-bold tracking-tighter">
-                      <span>Concise</span>
-                      <span>Detailed</span>
-                    </div>
+                    <input
+                      type="password"
+                      placeholder="gsk_..."
+                      className="input input-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl focus:border-primary/50"
+                      value={localSettings.ai?.apiKey || ""}
+                      onChange={(e) => handleApiKeyChange(e.target.value)}
+                    />
+                    <label className="label">
+                      <span className="label-text-alt opacity-50">Get your key from groq.com</span>
+                    </label>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                       <div>
+                        <p className="font-bold">Enable AI Features</p>
+                        <p className="text-xs opacity-50">Master switch for all AI-powered functionality</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={localSettings.ai?.enabled}
+                        onChange={(e) => handleToggleAi(e.target.checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                      <div>
                         <p className="font-bold">Auto-summarize new repos</p>
                         <p className="text-xs opacity-50">Summarize projects immediately after scanning</p>
                       </div>
-                      <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={localSettings.ai?.autoSummarizeOnScan}
+                        onChange={(e) => handleToggleAutoSummarize(e.target.checked)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -276,7 +320,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
             {/* Footer */}
             <div className="p-6 border-t border-base-content/5 flex justify-end gap-3 bg-base-200/30">
               <button className="btn btn-ghost rounded-xl px-6 font-bold" onClick={onClose}>Cancel</button>
-              <button className="btn btn-primary rounded-xl px-8 font-bold shadow-lg shadow-primary/20" onClick={onClose}>Save Changes</button>
+              <button className="btn btn-primary rounded-xl px-8 font-bold shadow-lg shadow-primary/20" onClick={handleSave}>Save Changes</button>
             </div>
           </div>
         </div>

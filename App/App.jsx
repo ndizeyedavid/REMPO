@@ -20,6 +20,16 @@ export default function App() {
     const [activeFolderPath, setActiveFolderPath] = useState(null)
     const [activities, setActivities] = useState([])
     const [isGitPaletteOpen, setIsGitPaletteOpen] = useState(false)
+    const [settings, setSettings] = useState({
+        ai: {
+            enabled: true,
+            autoSummarizeOnScan: true,
+            verbosity: 70,
+            provider: "groq",
+            apiKey: "",
+        },
+    })
+    const [aiResponses, setAiResponses] = useState({})
 
     // Load initial data from store
     useEffect(() => {
@@ -31,6 +41,8 @@ export default function App() {
                 if (store.pinnedFolders) setPinnedFolders(store.pinnedFolders);
                 if (store.scanCache) setScanCache(store.scanCache);
                 if (store.activities) setActivities(store.activities);
+                if (store.settings) setSettings(store.settings);
+                if (store.aiResponses) setAiResponses(store.aiResponses);
                 if (store.lastScannedFolder) {
                     console.log("Last scanned folder:", store.lastScannedFolder);
                 }
@@ -58,6 +70,17 @@ export default function App() {
             await window.electronAPI.updateStore("theme", newTheme);
         } catch (error) {
             console.error("Failed to update theme in store:", error);
+        }
+    };
+
+    const handleSettingsUpdate = async (key, value) => {
+        if (key === "settings") {
+            setSettings(value);
+        }
+        try {
+            await window.electronAPI.updateStore(key, value);
+        } catch (error) {
+            console.error(`Failed to update ${key} in store:`, error);
         }
     };
 
@@ -130,6 +153,24 @@ export default function App() {
                     clearInterval(interval);
                     // console.log(repos);
                     setScannedRepos(repos);
+
+                    // Auto-summarize first 8 repos if enabled
+                    if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan && settings.ai?.apiKey) {
+                        const first8 = repos.slice(0, 8);
+                        first8.forEach(repo => {
+                            if (!aiResponses[repo.path]) {
+                                window.electronAPI.generateSummary({ repoPath: repo.path })
+                                    .then(res => {
+                                        if (res.ok) {
+                                            setAiResponses(prev => ({
+                                                ...prev,
+                                                [repo.path]: res.summary
+                                            }));
+                                        }
+                                    });
+                            }
+                        });
+                    }
 
                     // Send notification
                     window.electronAPI.sendNotification({
@@ -243,6 +284,21 @@ export default function App() {
                                 projects={scannedRepos}
                                 activities={activities}
                                 onLogActivity={logActivity}
+                                aiSettings={settings.ai}
+                                aiResponses={aiResponses}
+                                onTriggerSummary={(repoPath) => {
+                                    if (settings.ai?.enabled && settings.ai?.apiKey && !aiResponses[repoPath]) {
+                                        window.electronAPI.generateSummary({ repoPath })
+                                            .then(res => {
+                                                if (res.ok) {
+                                                    setAiResponses(prev => ({
+                                                        ...prev,
+                                                        [repoPath]: res.summary
+                                                    }));
+                                                }
+                                            });
+                                    }
+                                }}
                             />
                         )}
                     </div>
@@ -254,6 +310,8 @@ export default function App() {
                     onClose={() => setIsSettingsOpen(false)}
                     currentTheme={theme}
                     onThemeChange={handleThemeChange}
+                    settings={settings}
+                    onSettingsUpdate={handleSettingsUpdate}
                 />
             )}
 

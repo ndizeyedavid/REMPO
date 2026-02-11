@@ -1,160 +1,160 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Terminal, X } from "lucide-react";
-import { Terminal as XTerm } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import "xterm/css/xterm.css";
+import { Terminal, X, CornerDownLeft } from "lucide-react";
+
+const parseGitArgs = (input) => {
+  const s = (input || "").trim();
+  if (!s) return [];
+
+  // Allow user to type either `git status` or just `status`
+  const withoutGit = s.toLowerCase().startsWith("git ") ? s.slice(4) : s;
+
+  const args = [];
+  let cur = "";
+  let quote = null;
+
+  for (let i = 0; i < withoutGit.length; i++) {
+    const ch = withoutGit[i];
+
+    if (quote) {
+      if (ch === quote) {
+        quote = null;
+      } else {
+        cur += ch;
+      }
+      continue;
+    }
+
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      continue;
+    }
+
+    if (ch === " ") {
+      if (cur) {
+        args.push(cur);
+        cur = "";
+      }
+      continue;
+    }
+
+    cur += ch;
+  }
+
+  if (cur) args.push(cur);
+  return args;
+};
 
 export default function GitPalette({ isOpen, onClose, cwd }) {
-  const [ptyId, setPtyId] = useState(null);
-  const [ptyError, setPtyError] = useState(null);
+  const [command, setCommand] = useState("");
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [entries, setEntries] = useState([]);
+  const [running, setRunning] = useState(false);
 
-  const terminalHostRef = useRef(null);
-  const xtermRef = useRef(null);
-  const fitRef = useRef(null);
-  const disposeDataListenerRef = useRef(null);
-  const disposeExitListenerRef = useRef(null);
-  const ptyIdRef = useRef(null);
+  const inputRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const folderName = useMemo(() => {
     if (!cwd) return "No folder selected";
     return cwd.split(/[\\/]/).pop();
   }, [cwd]);
 
-  const disposePty = async (id) => {
-    if (!id) return;
-    try {
-      await window.electronAPI?.ptyDispose?.({ id });
-    } catch (e) { }
-  };
-
   useEffect(() => {
     if (!isOpen) return;
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }, [isOpen]);
 
-    let cancelled = false;
-    let cleanupObserver;
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
+  }, [entries, running]);
 
-    const cleanup = async () => {
-      try {
-        if (typeof cleanupObserver === "function") cleanupObserver();
-      } catch (e) { }
-
-      try {
-        disposeDataListenerRef.current?.();
-      } catch (e) { }
-      try {
-        disposeExitListenerRef.current?.();
-      } catch (e) { }
-
-      disposeDataListenerRef.current = null;
-      disposeExitListenerRef.current = null;
-
-      const id = ptyIdRef.current;
-      ptyIdRef.current = null;
-      setPtyId(null);
-      await disposePty(id);
-
-      try {
-        xtermRef.current?.dispose?.();
-      } catch (e) { }
-      xtermRef.current = null;
-      fitRef.current = null;
-    };
-
-    const start = async () => {
-      await cleanup();
-      if (cancelled) return;
-
-      setPtyError(null);
-      const host = terminalHostRef.current;
-      if (!host) return;
-
-      const xterm = new XTerm({
-        convertEol: true,
-        cursorBlink: true,
-        fontFamily:
-          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-        fontSize: 13,
-        theme: {
-          background: "#0b0b0b",
+  const run = async () => {
+    if (!cwd) {
+      setEntries((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          cmd: command,
+          ok: false,
+          stdout: "",
+          stderr: "No active scanned folder selected",
         },
-      });
-      const fit = new FitAddon();
-      xterm.loadAddon(fit);
+      ]);
+      return;
+    }
 
-      xterm.open(host);
-      fit.fit();
+    const args = parseGitArgs(command);
+    if (args.length === 0) return;
 
-      xtermRef.current = xterm;
-      fitRef.current = fit;
+    const cmdText = `git ${args.join(" ")}`;
+    setHistory((prev) => {
+      const next = [cmdText, ...prev];
+      return next.slice(0, 50);
+    });
+    setHistoryIndex(-1);
 
-      const initialCols = xterm.cols;
-      const initialRows = xterm.rows;
+    setRunning(true);
+    try {
+      const res = await window.electronAPI.runGitCommand({ cwd, args });
+      setEntries((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          cmd: cmdText,
+          ok: !!res?.ok,
+          stdout: res?.stdout || "",
+          stderr: res?.stderr || "",
+        },
+      ]);
+    } catch (e) {
+      setEntries((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          cmd: cmdText,
+          ok: false,
+          stdout: "",
+          stderr: String(e?.message || e),
+        },
+      ]);
+    } finally {
+      setRunning(false);
+      setCommand("");
+    }
+  };
 
-      const res = await window.electronAPI?.ptyCreate?.({
-        cwd: cwd || undefined,
-        cols: initialCols,
-        rows: initialRows,
-      });
+  const onKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onClose?.();
+      return;
+    }
 
-      if (cancelled) {
-        xterm.dispose();
-        return;
-      }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      run();
+      return;
+    }
 
-      if (!res?.ok) {
-        setPtyError(res?.error || "Failed to start terminal");
-        xterm.dispose();
-        return;
-      }
+    if (e.key === "ArrowUp") {
+      if (history.length === 0) return;
+      e.preventDefault();
+      const nextIndex = Math.min(historyIndex + 1, history.length - 1);
+      setHistoryIndex(nextIndex);
+      const h = history[nextIndex] || "";
+      setCommand(h.startsWith("git ") ? h : `git ${h}`);
+      return;
+    }
 
-      const id = res.id;
-      ptyIdRef.current = id;
-      setPtyId(id);
-
-      disposeDataListenerRef.current = window.electronAPI?.onPtyData?.(({ id: msgId, data }) => {
-        if (msgId !== id) return;
-        xterm.write(data);
-      });
-      disposeExitListenerRef.current = window.electronAPI?.onPtyExit?.(({ id: msgId }) => {
-        if (msgId !== id) return;
-        ptyIdRef.current = null;
-        setPtyId(null);
-      });
-
-      xterm.onData((data) => {
-        window.electronAPI?.ptyWrite?.({ id, data });
-      });
-
-      const ro = new ResizeObserver(() => {
-        try {
-          fit.fit();
-          window.electronAPI?.ptyResize?.({ id, cols: xterm.cols, rows: xterm.rows });
-        } catch (e) { }
-      });
-      ro.observe(host);
-
-      xterm.attachCustomKeyEventHandler((e) => {
-        if (e.key === "Escape") {
-          onClose?.();
-          return false;
-        }
-        return true;
-      });
-
-      cleanupObserver = () => {
-        try {
-          ro.disconnect();
-        } catch (e) { }
-      };
-    };
-
-    start();
-
-    return () => {
-      cancelled = true;
-      cleanup();
-    };
-  }, [isOpen, cwd, onClose]);
+    if (e.key === "ArrowDown") {
+      if (history.length === 0) return;
+      e.preventDefault();
+      const nextIndex = Math.max(historyIndex - 1, -1);
+      setHistoryIndex(nextIndex);
+      const h = nextIndex === -1 ? "" : history[nextIndex] || "";
+      setCommand(h);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -170,7 +170,7 @@ export default function GitPalette({ isOpen, onClose, cwd }) {
                   <Terminal className="size-5" />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-bold truncate">Terminal</div>
+                  <div className="font-bold truncate">Git Command Palette</div>
                   <div className="text-xs opacity-50 truncate">cwd: {folderName}</div>
                 </div>
               </div>
@@ -179,19 +179,56 @@ export default function GitPalette({ isOpen, onClose, cwd }) {
               </button>
             </div>
 
-            <div className="px-5 py-4">
-              {ptyError ? (
-                <div className="text-sm bg-error/10 border border-error/20 rounded-xl p-4">
-                  {ptyError}
+            <div ref={scrollRef} className="max-h-72 overflow-y-auto custom-scrollbar px-5 py-4 space-y-3">
+              {entries.length === 0 ? (
+                <div className="opacity-40 text-sm">
+                  Type a git command (e.g. <span className="font-mono">status</span>, <span className="font-mono">log -5</span>, <span className="font-mono">checkout -b my-branch</span>)
                 </div>
               ) : (
-                <div
-                  ref={terminalHostRef}
-                  className="h-80 w-full px-2 border border-base-content/10 overflow-hidden"
-                  style={{ background: "#0b0b0b" }}
-                />
+                entries.map((e) => (
+                  <div key={e.id} className="space-y-2">
+                    <div className="font-mono text-xs opacity-70">$ {e.cmd}</div>
+                    {(e.stdout || "").trim() && (
+                      <pre className="text-xs bg-base-100/40 border border-base-content/5 rounded-xl p-3 overflow-x-auto">{e.stdout}</pre>
+                    )}
+                    {(e.stderr || "").trim() && (
+                      <pre className={`text-xs border rounded-xl p-3 overflow-x-auto ${e.ok ? "bg-warning/10 border-warning/20" : "bg-error/10 border-error/20"}`}>{e.stderr}</pre>
+                    )}
+                  </div>
+                ))
               )}
-              <div className="mt-2 text-[10px] opacity-40">Esc to close.</div>
+              {running && (
+                <div className="font-mono text-xs opacity-50">running...</div>
+              )}
+            </div>
+
+            <div className="px-5 py-4 border-t border-base-content/10 bg-base-200/30">
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest ml-1">Command</label>
+                  <input
+                    ref={inputRef}
+                    value={command}
+                    onChange={(e) => setCommand(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="git status"
+                    className="input input-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl focus:border-primary/50 font-mono"
+                    disabled={running}
+                  />
+                </div>
+                <button
+                  className="btn btn-primary rounded-xl gap-2"
+                  onClick={run}
+                  disabled={running || !command.trim()}
+                  title="Run (Enter)"
+                >
+                  <CornerDownLeft className="size-4" />
+                  Run
+                </button>
+              </div>
+              <div className="mt-2 text-[10px] opacity-40">
+                Enter to run. Esc to close. Up/Down for history.
+              </div>
             </div>
           </div>
         </div>

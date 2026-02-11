@@ -1,14 +1,45 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Folder, GitBranch, Clock, Sparkles, MoreHorizontal, ExternalLink, GitCommit, Trash2 } from "lucide-react";
 
-export default function ProjectCard({ project, handleProjectClick }) {
+export default function ProjectCard({ project, handleProjectClick, aiSettings, aiResponse, onTriggerSummary }) {
+    const [isVisible, setIsVisible] = useState(false);
+    const cardRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (cardRef.current) {
+            observer.observe(cardRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (isVisible && aiSettings?.enabled && aiSettings?.apiKey && !aiResponse && onTriggerSummary) {
+            onTriggerSummary(project.path);
+        }
+    }, [isVisible, aiSettings?.enabled, aiSettings?.apiKey, aiResponse, project.path, onTriggerSummary]);
+
     function verifyClickArea(e) {
         if (e.target.id != "menu") {
             handleProjectClick(project);
         }
     }
     return (
-        <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative" onClick={verifyClickArea}>
+        <div
+            ref={cardRef}
+            className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative"
+            onClick={verifyClickArea}
+        >
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3 w-full overflow-hidden">
                     <div className="p-3 rounded-xl bg-primary/10 text-primary">
@@ -83,7 +114,7 @@ export default function ProjectCard({ project, handleProjectClick }) {
                     AI Summary
                 </div>
                 <p className="text-sm opacity-70 leading-relaxed line-clamp-2 italic">
-                    "{project.summary}"
+                    {aiResponse ? `"${aiResponse}"` : project.summary}
                 </p>
             </div>
         </div>

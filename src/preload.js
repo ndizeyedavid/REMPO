@@ -21,19 +21,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   windowClose: () => ipcRenderer.invoke("window-close"),
   windowIsMaximized: () => ipcRenderer.invoke("window-is-maximized"),
 
-  ptyCreate: (data) => ipcRenderer.invoke("pty-create", data),
-  ptyWrite: (data) => ipcRenderer.invoke("pty-write", data),
-  ptyResize: (data) => ipcRenderer.invoke("pty-resize", data),
-  ptyDispose: (data) => ipcRenderer.invoke("pty-dispose", data),
-
-  onPtyData: (callback) => {
-    const handler = (_event, payload) => callback(payload);
-    ipcRenderer.on("pty-data", handler);
-    return () => ipcRenderer.removeListener("pty-data", handler);
-  },
-  onPtyExit: (callback) => {
-    const handler = (_event, payload) => callback(payload);
-    ipcRenderer.on("pty-exit", handler);
-    return () => ipcRenderer.removeListener("pty-exit", handler);
-  },
+  generateSummary: (data) => ipcRenderer.invoke("generate-summary", data),
 });

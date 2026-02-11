@@ -9,7 +9,7 @@ import ActivitySidebar from "./ActivitySidebar";
 import DashboardStats from "./DashboardStats";
 import ProjectDetailsDrawer from "./ProjectDetailsDrawer";
 
-export default function DashboardState({ projects: initialProjects, activities, onLogActivity }) {
+export default function DashboardState({ projects: initialProjects, activities, onLogActivity, aiSettings, aiResponses, onTriggerSummary }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
   const [selectedProject, setSelectedProject] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -196,7 +196,14 @@ export default function DashboardState({ projects: initialProjects, activities, 
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {filteredProjects.map((p, idx) => (
-                <ProjectCard key={idx} project={p} handleProjectClick={handleProjectClick} />
+                <ProjectCard
+                  key={p.path}
+                  project={p}
+                  handleProjectClick={handleProjectClick}
+                  aiSettings={aiSettings}
+                  aiResponse={aiResponses[p.path]}
+                  onTriggerSummary={onTriggerSummary}
+                />
               ))}
             </div>
           ) : (
