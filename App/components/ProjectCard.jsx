@@ -10,11 +10,11 @@ export default function ProjectCard({ project, handleProjectClick }) {
     return (
         <div className="bg-base-300/30 p-5 rounded-2xl border border-base-content/5 hover:border-primary/30 transition-all group relative" onClick={verifyClickArea}>
             <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full overflow-hidden">
                     <div className="p-3 rounded-xl bg-primary/10 text-primary">
                         <Folder className="size-6" />
                     </div>
-                    <div>
+                    <div className="">
                         <h3 className="font-semibold text-lg">{project.name}</h3>
                         <p className="text-xs opacity-40 font-mono">{project.path}</p>
                     </div>
