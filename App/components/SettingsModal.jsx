@@ -5,6 +5,7 @@ import {
   Moon, Sun, Monitor, Languages, Terminal,
   Bug, Info, Github, ExternalLink, Heart
 } from "lucide-react";
+import logoImage from "../../src/assets/logo.png";
 
 export default function SettingsModal({ onClose, currentTheme, onThemeChange, settings, onSettingsUpdate }) {
   const [activeTab, setActiveTab] = useState("personalization");
@@ -581,7 +582,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
                   <div className="flex flex-col items-center text-center space-y-4 py-6">
                     <div className="size-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-xl shadow-primary/10 border border-primary/20">
-                      <img src="/src/assets/logo.png" className="size-16" alt="Rempo Logo" />
+                      <img src={logoImage} className="size-16" alt="Rempo Logo" />
                     </div>
                     <div>
                       <h3 className="text-3xl font-black tracking-tighter">REMPO</h3>
