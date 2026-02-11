@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import {
   X, User, Palette, Sparkles, Globe,
   Settings as SettingsIcon, Bell, Shield,
-  Moon, Sun, Monitor, Languages, Terminal
+  Moon, Sun, Monitor, Languages, Terminal,
+  Bug, Info, Github, ExternalLink, Heart
 } from "lucide-react";
 
 export default function SettingsModal({ onClose, currentTheme, onThemeChange, settings, onSettingsUpdate }) {
@@ -101,6 +102,10 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
     onClose();
   };
 
+  const handleOpenUrl = (url) => {
+    window.electronAPI.openInBrowser(url);
+  };
+
   const themes = [
     { id: "light", label: "Light Mode", icon: Sun, color: "bg-slate-50", textColor: "text-slate-900" },
     { id: "dark", label: "Dark Mode", icon: Moon, color: "bg-[#191e24]", textColor: "text-white" },
@@ -119,6 +124,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
     { id: "languages", label: "Languages", icon: Globe },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "system", label: "System", icon: SettingsIcon },
+    { id: "about", label: "About", icon: Info },
   ];
 
   return (
@@ -344,7 +350,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
               )}
 
               {activeTab === "system" && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
                   <section>
                     <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Application Behavior</h4>
                     <div className="space-y-3">
@@ -570,6 +576,88 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                   </section>
                 </div>
               )}
+
+              {activeTab === "about" && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+                  <div className="flex flex-col items-center text-center space-y-4 py-6">
+                    <div className="size-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-xl shadow-primary/10 border border-primary/20">
+                      <img src="/src/assets/logo.png" className="size-16" alt="Rempo Logo" />
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-black tracking-tighter">REMPO</h3>
+                      <p className="text-xs font-bold opacity-40 uppercase tracking-widest">Version 1.0.4-beta</p>
+                    </div>
+                    <p className="max-w-md opacity-70 leading-relaxed italic">
+                      "Remember what you were building. A beautiful dashboard for your global git ecosystem."
+                    </p>
+                  </div>
+
+                  <section className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => handleOpenUrl("https://github.com/ndizeyedavid/REMPO/issues/new")}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-base-200 border border-base-content/5 hover:border-primary/30 hover:bg-primary/5 transition-all group"
+                    >
+                      <div className="p-3 rounded-2xl bg-error/10 text-error group-hover:scale-110 transition-transform">
+                        <Bug className="size-6" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold">Report a Bug</p>
+                        <p className="text-xs opacity-50">Found an issue? Let us know!</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenUrl("https://github.com/ndizeyedavid/REMPO")}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-base-200 border border-base-content/5 hover:border-primary/30 hover:bg-primary/5 transition-all group"
+                    >
+                      <div className="p-3 rounded-2xl bg-base-content/10 text-base-content group-hover:scale-110 transition-transform">
+                        <Github className="size-6" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold">GitHub Repo</p>
+                        <p className="text-xs opacity-50">Star us or contribute code</p>
+                      </div>
+                    </button>
+                  </section>
+
+                  <section className="p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 relative overflow-hidden group">
+                    <div className="relative z-10 flex flex-col items-center text-center gap-4">
+                      <div className="flex items-center gap-2 text-primary font-bold">
+                        <Heart className="size-5 fill-primary" />
+                        <span>Created with passion by</span>
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-2xl font-black tracking-tight">David NDIZEYE</h4>
+                        <p className="text-sm opacity-60">Full-stack Developer & Geek🤓</p>
+                      </div>
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          onClick={() => handleOpenUrl("https://github.com/ndizeyedavid")}
+                          className="btn btn-ghost btn-sm rounded-xl border border-base-content/10 hover:bg-primary/10"
+                        >
+                          <Github className="size-4 mr-2" />
+                          Follow
+                        </button>
+                        <button
+                          onClick={() => handleOpenUrl("https://davidndizeye.vercel.app")}
+                          className="btn btn-ghost btn-sm rounded-xl border border-base-content/10 hover:bg-primary/10"
+                        >
+                          <ExternalLink className="size-4 mr-2" />
+                          Portfolio
+                        </button>
+                      </div>
+                    </div>
+                    <div className="absolute -top-6 -right-4 p-8 opacity-5 group-hover:opacity-30 transition-opacity rotate-12">
+                      {/* <Playst className="size-32 rotate-12" /> */}
+                      <span className="text-[128px]">🎮</span>
+                    </div>
+                  </section>
+
+                  <div className="text-center pt-4 opacity-30 text-[10px] font-bold uppercase tracking-widest">
+                    &copy; 2026 REMPO. All rights reserved.
+                  </div>
+                </div>
+              ) || null}
             </div>
 
             {/* Footer */}
