@@ -5,7 +5,8 @@ const { contextBridge, ipcRenderer, shell } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   selectFolder: () => ipcRenderer.invoke("select-folder"),
-  scanRepos: (rootPath) => ipcRenderer.invoke("scan-repos", rootPath),
+  scanRepos: (rootPath, options) =>
+    ipcRenderer.invoke("scan-repos", rootPath, options),
   openInEditor: (repoPath) => ipcRenderer.invoke("open-in-editor", repoPath),
   getStore: (key) => ipcRenderer.invoke("get-store", key),
   updateStore: (key, value) => ipcRenderer.invoke("update-store", key, value),

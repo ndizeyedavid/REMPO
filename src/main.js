@@ -44,9 +44,20 @@ const DEFAULT_STORE = {
     },
     system: {
       openLastScannedFolderOnLaunch: true,
+      restoreLastCacheOnLaunch: true,
       launchAtStartup: false,
       hardwareAcceleration: true,
       minimizeToTray: true,
+    },
+    terminal: {
+      fontSize: 13,
+      cursorBlink: true,
+      theme: "dark",
+    },
+    scan: {
+      maxDepth: 6,
+      includeHidden: false,
+      extraIgnorePatterns: [],
     },
     language: "English",
   },
@@ -89,6 +100,14 @@ const mergeStore = (data) => {
       ...DEFAULT_STORE.settings.system,
       ...(data.settings?.system || {}),
     },
+    terminal: {
+      ...DEFAULT_STORE.settings.terminal,
+      ...(data.settings?.terminal || {}),
+    },
+    scan: {
+      ...DEFAULT_STORE.settings.scan,
+      ...(data.settings?.scan || {}),
+    },
   };
 
   return merged;
@@ -120,6 +139,22 @@ let store = loadStore();
 let tray = null;
 let mainWindowRef = null;
 
+const getIconPath = () => {
+  const candidates = [
+    // Packaged/built path (vite main build)
+    path.join(__dirname, "..", "assets", "favicon.ico"),
+    // Dev source path
+    path.join(__dirname, "..", "..", "src", "assets", "favicon.ico"),
+  ];
+
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (e) {}
+  }
+  return null;
+};
+
 const ensureTray = () => {
   try {
     if (tray) return tray;
@@ -131,14 +166,8 @@ const ensureTray = () => {
       return null;
     }
 
-    const iconPath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "src",
-      "assets",
-      "logo.png"
-    );
+    const iconPath = getIconPath();
+    if (!iconPath) return null;
     tray = new Tray(iconPath);
     tray.setToolTip("Rempo");
 
@@ -183,9 +212,11 @@ if (started) {
 
 const createWindow = () => {
   // Create the browser window.
+  const iconPath = getIconPath();
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+    icon: iconPath || undefined,
     frame: false,
     titleBarStyle: "hidden",
     titleBarOverlay: {
@@ -396,10 +427,23 @@ Focus on the current state and purpose of the project.`;
   }
 });
 
-ipcMain.handle("scan-repos", async (event, rootPath) => {
+ipcMain.handle("scan-repos", async (event, rootPath, options) => {
   const repos = [];
   let foldersScanned = 0;
   let reposFound = 0;
+
+  const scanSettings = {
+    ...(store.settings?.scan || {}),
+    ...(options && typeof options === "object" ? options : {}),
+  };
+  const maxDepth =
+    typeof scanSettings.maxDepth === "number" && scanSettings.maxDepth > 0
+      ? scanSettings.maxDepth
+      : 6;
+  const includeHidden = !!scanSettings.includeHidden;
+  const extraIgnorePatterns = Array.isArray(scanSettings.extraIgnorePatterns)
+    ? scanSettings.extraIgnorePatterns
+    : [];
 
   let lastProgressSentAt = 0;
   const sendProgress = (force = false) => {
@@ -451,7 +495,8 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
       return ignored;
     };
 
-    const scanWithIgnore = async (currentDir, matcherStack) => {
+    const scanWithIgnore = async (currentDir, matcherStack, depth) => {
+      if (depth > maxDepth) return;
       foldersScanned += 1;
       sendProgress();
 
@@ -490,7 +535,7 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
 
       for (const file of files) {
         if (file === "node_modules") continue;
-        if (file.startsWith(".")) continue;
+        if (!includeHidden && file.startsWith(".")) continue;
 
         const fullPath = path.join(currentDir, file);
         let stat;
@@ -502,11 +547,24 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
         if (!stat.isDirectory()) continue;
 
         if (isIgnoredByStack(fullPath, true, nextStack)) continue;
-        await scanWithIgnore(fullPath, nextStack);
+        await scanWithIgnore(fullPath, nextStack, depth + 1);
       }
     };
 
-    await scanWithIgnore(dir, []);
+    const extraIg = ignore();
+    try {
+      extraIg.add(
+        extraIgnorePatterns
+          .filter((p) => typeof p === "string" && p.trim())
+          .join("\n")
+      );
+    } catch (e) {}
+
+    const initialStack = extraIgnorePatterns.length
+      ? [{ baseDir: dir, ig: extraIg }]
+      : [];
+
+    await scanWithIgnore(dir, initialStack, 0);
   };
 
   try {
@@ -609,13 +667,11 @@ ipcMain.handle("open-in-browser", async (event, url) => {
   }
 });
 
-ipcMain.handle("send-notification", (event, { title, body }) => {
+ipcMain.handle("send-notification", (event, { title, body, type }) => {
   try {
     const notifications = store.settings?.notifications;
     if (notifications && notifications.enabled === false) return;
 
-    // Optional type gating (backwards compatible)
-    const type = arguments?.[1]?.type;
     if (type && notifications) {
       const typeMap = {
         scanCompleted: "scanCompleted",
@@ -722,6 +778,11 @@ ipcMain.handle("update-store", (event, key, value) => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  try {
+    if (process.platform === "win32") {
+      app.setAppUserModelId("com.rempo.app");
+    }
+  } catch (e) {}
   createWindow();
 
   // On OS X it's common to re-create a window in the app when the

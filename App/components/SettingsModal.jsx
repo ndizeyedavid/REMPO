@@ -62,6 +62,40 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
     setLocalSettings(next);
   };
 
+  const handleSetTerminal = (key, value) => {
+    const next = {
+      ...localSettings,
+      terminal: {
+        ...(localSettings.terminal || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleSetScan = (key, value) => {
+    const next = {
+      ...localSettings,
+      scan: {
+        ...(localSettings.scan || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleClearScanCache = async () => {
+    await onSettingsUpdate("scanCache", {});
+  };
+
+  const handleClearAiSummaries = async () => {
+    await onSettingsUpdate("aiResponses", {});
+  };
+
+  const handleClearActivities = async () => {
+    await onSettingsUpdate("activities", []);
+  };
+
   const handleSave = () => {
     onSettingsUpdate("settings", localSettings);
     onClose();
@@ -326,6 +360,20 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                           onChange={(e) => handleToggleSystem("openLastScannedFolderOnLaunch", e.target.checked)}
                         />
                       </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Restore last cached results</p>
+                          <p className="text-xs opacity-50">Skip scanning and load your last scan from cache on startup</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.restoreLastCacheOnLaunch !== false}
+                          onChange={(e) => handleToggleSystem("restoreLastCacheOnLaunch", e.target.checked)}
+                          disabled={localSettings.system?.openLastScannedFolderOnLaunch === false}
+                        />
+                      </div>
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
                           <p className="font-bold">Launch at Startup</p>
@@ -378,6 +426,139 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                         </div>
                       </div>
                       {/* <button className="btn btn-ghost btn-sm rounded-lg border border-base-content/10">Change</button> */}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearScanCache}
+                      >
+                        Clear Scan Cache
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearAiSummaries}
+                      >
+                        Clear AI Summaries
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearActivities}
+                      >
+                        Clear Activity Log
+                      </button>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Git Terminal</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold">Font Size</p>
+                            <p className="text-xs opacity-50">Affects the embedded Git terminal (Ctrl+K)</p>
+                          </div>
+                          <input
+                            type="number"
+                            min={10}
+                            max={22}
+                            className="input input-bordered w-24 bg-base-100/40 border-base-content/10 rounded-xl"
+                            value={Number(localSettings.terminal?.fontSize ?? 13)}
+                            onChange={(e) => handleSetTerminal("fontSize", Number(e.target.value || 13))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Cursor Blink</p>
+                          <p className="text-xs opacity-50">Blinking cursor in the Git terminal</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.terminal?.cursorBlink !== false}
+                          onChange={(e) => handleSetTerminal("cursorBlink", e.target.checked)}
+                        />
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <p className="font-bold mb-2">Terminal Theme</p>
+                        <div className="join w-full">
+                          <button
+                            type="button"
+                            className={`btn join-item flex-1 ${localSettings.terminal?.theme !== "light" ? "btn-primary" : "btn-ghost"}`}
+                            onClick={() => handleSetTerminal("theme", "dark")}
+                          >
+                            Dark
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn join-item flex-1 ${localSettings.terminal?.theme === "light" ? "btn-primary" : "btn-ghost"}`}
+                            onClick={() => handleSetTerminal("theme", "light")}
+                          >
+                            Light
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Scan Defaults</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold">Max Depth</p>
+                            <p className="text-xs opacity-50">How deep Rempo searches for repos (higher = slower)</p>
+                          </div>
+                          <input
+                            type="number"
+                            min={1}
+                            max={25}
+                            className="input input-bordered w-24 bg-base-100/40 border-base-content/10 rounded-xl"
+                            value={Number(localSettings.scan?.maxDepth ?? 6)}
+                            onChange={(e) => handleSetScan("maxDepth", Number(e.target.value || 6))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Include Hidden Folders</p>
+                          <p className="text-xs opacity-50">Scan dot-folders and hidden directories</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={!!localSettings.scan?.includeHidden}
+                          onChange={(e) => handleSetScan("includeHidden", e.target.checked)}
+                        />
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <p className="font-bold mb-2">Extra Ignore Patterns</p>
+                        <p className="text-xs opacity-50 mb-3">One pattern per line. Example: node_modules, dist, .next</p>
+                        <textarea
+                          className="textarea textarea-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl"
+                          rows={4}
+                          value={(localSettings.scan?.extraIgnorePatterns || []).join("\n")}
+                          onChange={(e) =>
+                            handleSetScan(
+                              "extraIgnorePatterns",
+                              (e.target.value || "")
+                                .split(/\r?\n/)
+                                .map((s) => s.trim())
+                                .filter(Boolean)
+                            )
+                          }
+                        />
+                      </div>
                     </div>
                   </section>
 

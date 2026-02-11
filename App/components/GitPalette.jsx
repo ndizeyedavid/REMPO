@@ -47,7 +47,7 @@ const parseGitArgs = (input) => {
   return args;
 };
 
-export default function GitPalette({ isOpen, onClose, cwd }) {
+export default function GitPalette({ isOpen, onClose, cwd, terminalPrefs }) {
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
 
@@ -121,15 +121,22 @@ export default function GitPalette({ isOpen, onClose, cwd }) {
     const host = terminalHostRef.current;
     if (!host) return;
 
+    const prefs = terminalPrefs || {};
+    const fontSize = typeof prefs.fontSize === "number" ? prefs.fontSize : 13;
+    const cursorBlink = prefs.cursorBlink !== false;
+    const themeName = prefs.theme || "dark";
+    const theme =
+      themeName === "light"
+        ? { background: "#f8fafc", foreground: "#0f172a" }
+        : { background: "#0b0b0b" };
+
     const term = new XTerm({
       convertEol: true,
-      cursorBlink: true,
+      cursorBlink,
       fontFamily:
         "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-      fontSize: 13,
-      theme: {
-        background: "#0b0b0b",
-      },
+      fontSize,
+      theme,
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
@@ -226,7 +233,7 @@ export default function GitPalette({ isOpen, onClose, cwd }) {
       inputRef.current = "";
       historyIndexRef.current = -1;
     };
-  }, [isOpen, folderName, cwd, onClose]);
+  }, [isOpen, folderName, cwd, onClose, terminalPrefs]);
 
   if (!isOpen) return null;
 

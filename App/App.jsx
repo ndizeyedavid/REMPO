@@ -111,6 +111,15 @@ export default function App() {
         if (key === "settings") {
             setSettings(value);
         }
+        if (key === "scanCache") {
+            setScanCache(value || {});
+        }
+        if (key === "aiResponses") {
+            setAiResponses(value || {});
+        }
+        if (key === "activities") {
+            setActivities(Array.isArray(value) ? value : []);
+        }
         try {
             await window.electronAPI.updateStore(key, value);
         } catch (error) {
@@ -161,7 +170,11 @@ export default function App() {
                 : null;
 
             // Actual scan
-            const repos = await window.electronAPI.scanRepos(folderPath);
+            const scanOptions = {
+                ...(settings.scan || {}),
+                ...(options.scan || {}),
+            };
+            const repos = await window.electronAPI.scanRepos(folderPath, scanOptions);
 
             try {
                 disposeScanProgress?.();
