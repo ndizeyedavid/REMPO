@@ -139,6 +139,88 @@ ipcMain.handle("select-folder", async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle("get-home-dir", () => {
+  try {
+    return { ok: true, path: app.getPath("home") };
+  } catch (e) {
+    return { ok: false, error: e?.message || String(e) };
+  }
+});
+
+ipcMain.handle("get-quick-access-paths", () => {
+  try {
+    const get = (key) => {
+      try {
+        return app.getPath(key);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    return {
+      ok: true,
+      paths: {
+        desktop: get("desktop"),
+        downloads: get("downloads"),
+        documents: get("documents"),
+        pictures: get("pictures"),
+        music: get("music"),
+        videos: get("videos"),
+      },
+    };
+  } catch (e) {
+    return { ok: false, error: e?.message || String(e) };
+  }
+});
+
+ipcMain.handle("list-drives", () => {
+  try {
+    if (process.platform !== "win32") {
+      return { ok: true, drives: [{ name: "/", path: "/" }] };
+    }
+
+    const drives = [];
+    for (let i = 65; i <= 90; i++) {
+      const letter = String.fromCharCode(i);
+      const p = `${letter}:\\`;
+      try {
+        if (fs.existsSync(p)) drives.push({ name: `${letter}:`, path: p });
+      } catch (e) {}
+    }
+
+    return { ok: true, drives };
+  } catch (e) {
+    return { ok: false, error: e?.message || String(e) };
+  }
+});
+
+ipcMain.handle("list-dir", async (_event, { dirPath }) => {
+  try {
+    if (!dirPath || typeof dirPath !== "string") {
+      return { ok: false, error: "dirPath is required" };
+    }
+
+    let items;
+    try {
+      items = fs.readdirSync(dirPath, { withFileTypes: true });
+    } catch (e) {
+      return { ok: false, error: e?.message || String(e) };
+    }
+
+    const dirs = items
+      .filter((d) => d.isDirectory())
+      .map((d) => ({
+        name: d.name,
+        path: path.join(dirPath, d.name),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return { ok: true, dirs };
+  } catch (e) {
+    return { ok: false, error: e?.message || String(e) };
+  }
+});
+
 ipcMain.handle("window-minimize", (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.minimize();

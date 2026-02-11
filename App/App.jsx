@@ -7,6 +7,7 @@ import ScanningState from "./components/ScanningState"
 import DashboardState from "./components/DashboardState"
 import SettingsModal from "./components/SettingsModal"
 import GitPalette from "./components/GitPalette"
+import FolderPicker from "./components/FolderPicker"
 
 export default function App() {
     const [view, setView] = useState("welcome") // "welcome", "scanning", "dashboard"
@@ -20,6 +21,7 @@ export default function App() {
     const [activeFolderPath, setActiveFolderPath] = useState(null)
     const [activities, setActivities] = useState([])
     const [isGitPaletteOpen, setIsGitPaletteOpen] = useState(false)
+    const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false)
     const [settings, setSettings] = useState({
         ai: {
             enabled: true,
@@ -30,6 +32,10 @@ export default function App() {
         },
     })
     const [aiResponses, setAiResponses] = useState({})
+
+    const openFolderPicker = () => {
+        setIsFolderPickerOpen(true)
+    }
 
     // Load initial data from store
     useEffect(() => {
@@ -99,7 +105,8 @@ export default function App() {
         try {
             let folderPath = folderPathInput;
             if (!folderPath) {
-                folderPath = await window.electronAPI.selectFolder();
+                openFolderPicker();
+                return;
             }
             if (!folderPath) return;
 
@@ -255,7 +262,7 @@ export default function App() {
     return (
         <div className="flex h-screen w-screen bg-base-200 text-base-content overflow-hidden" data-theme={theme}>
             <Sidebar
-                onScanProjects={() => handleStartScan()}
+                onScanProjects={openFolderPicker}
                 onRefreshProjects={handleRefreshScan}
                 onSettings={() => setIsSettingsOpen(true)}
                 watchedFolders={watchedFolders}
@@ -274,7 +281,7 @@ export default function App() {
                     <div className="flex h-full items-center justify-center">
                         {view === "welcome" && (
                             <div className="px-6 w-full flex justify-center">
-                                <WelcomeState onStartScan={() => handleStartScan()} />
+                                <WelcomeState onStartScan={openFolderPicker} />
                             </div>
                         )}
                         {view === "scanning" && (
@@ -325,6 +332,17 @@ export default function App() {
                 isOpen={isGitPaletteOpen}
                 onClose={() => setIsGitPaletteOpen(false)}
                 cwd={activeFolderPath}
+            />
+
+            <FolderPicker
+                isOpen={isFolderPickerOpen}
+                onClose={() => setIsFolderPickerOpen(false)}
+                onSelect={(folderPath) => {
+                    setIsFolderPickerOpen(false)
+                    handleStartScan(folderPath)
+                }}
+                initialPath={activeFolderPath}
+                recentFolders={watchedFolders}
             />
         </div>
     )

@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openInEditor: (repoPath) => ipcRenderer.invoke("open-in-editor", repoPath),
   getStore: (key) => ipcRenderer.invoke("get-store", key),
   updateStore: (key, value) => ipcRenderer.invoke("update-store", key, value),
+  getHomeDir: () => ipcRenderer.invoke("get-home-dir"),
+  getQuickAccessPaths: () => ipcRenderer.invoke("get-quick-access-paths"),
+  listDrives: () => ipcRenderer.invoke("list-drives"),
+  listDir: (data) => ipcRenderer.invoke("list-dir", data),
   getRepoDetails: (repoPath) =>
     ipcRenderer.invoke("get-repo-details", repoPath),
   commitAndPush: (data) => ipcRenderer.invoke("commit-and-push", data),
