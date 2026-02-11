@@ -15,4 +15,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getRemoteUrl: (repoPath) => ipcRenderer.invoke("get-remote-url", repoPath),
   openInBrowser: (url) => ipcRenderer.invoke("open-in-browser", url),
   sendNotification: (data) => ipcRenderer.invoke("send-notification", data),
+  runGitCommand: (data) => ipcRenderer.invoke("run-git-command", data),
+  windowMinimize: () => ipcRenderer.invoke("window-minimize"),
+  windowToggleMaximize: () => ipcRenderer.invoke("window-toggle-maximize"),
+  windowClose: () => ipcRenderer.invoke("window-close"),
+  windowIsMaximized: () => ipcRenderer.invoke("window-is-maximized"),
 });

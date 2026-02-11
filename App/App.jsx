@@ -6,6 +6,7 @@ import WelcomeState from "./components/WelcomeState"
 import ScanningState from "./components/ScanningState"
 import DashboardState from "./components/DashboardState"
 import SettingsModal from "./components/SettingsModal"
+import GitPalette from "./components/GitPalette"
 
 export default function App() {
     const [view, setView] = useState("welcome") // "welcome", "scanning", "dashboard"
@@ -18,6 +19,7 @@ export default function App() {
     const [scanCache, setScanCache] = useState({})
     const [activeFolderPath, setActiveFolderPath] = useState(null)
     const [activities, setActivities] = useState([])
+    const [isGitPaletteOpen, setIsGitPaletteOpen] = useState(false)
 
     // Load initial data from store
     useEffect(() => {
@@ -38,6 +40,17 @@ export default function App() {
         };
         initStore();
     }, []);
+
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+                e.preventDefault();
+                setIsGitPaletteOpen(true);
+            }
+        }
+        window.addEventListener("keydown", onKeyDown)
+        return () => window.removeEventListener("keydown", onKeyDown)
+    }, [])
 
     const handleThemeChange = async (newTheme) => {
         setTheme(newTheme);
@@ -243,6 +256,12 @@ export default function App() {
                     onThemeChange={handleThemeChange}
                 />
             )}
+
+            <GitPalette
+                isOpen={isGitPaletteOpen}
+                onClose={() => setIsGitPaletteOpen(false)}
+                cwd={activeFolderPath}
+            />
         </div>
     )
 }

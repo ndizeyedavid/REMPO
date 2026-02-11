@@ -8,7 +8,7 @@ const {
 } = require("electron");
 const path = require("node:path");
 const started = require("electron-squirrel-startup");
-const { exec } = require("child_process");
+const { exec, execFile } = require("child_process");
 const fs = require("fs");
 const simpleGit = require("simple-git");
 const ignore = require("ignore");
@@ -85,6 +85,14 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+    frame: false,
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: "#0b0b0b",
+      symbolColor: "#ffffff",
+      height: 48,
+    },
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -110,6 +118,29 @@ ipcMain.handle("select-folder", async () => {
   });
   if (result.canceled) return null;
   return result.filePaths[0];
+});
+
+ipcMain.handle("window-minimize", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.minimize();
+});
+
+ipcMain.handle("window-toggle-maximize", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return;
+  if (win.isMaximized()) win.unmaximize();
+  else win.maximize();
+  return win.isMaximized();
+});
+
+ipcMain.handle("window-close", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.close();
+});
+
+ipcMain.handle("window-is-maximized", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  return !!win?.isMaximized();
 });
 
 ipcMain.handle("scan-repos", async (event, rootPath) => {
@@ -303,6 +334,71 @@ ipcMain.handle("open-in-browser", async (event, url) => {
 ipcMain.handle("send-notification", (event, { title, body }) => {
   if (Notification.isSupported()) {
     new Notification({ title, body }).show();
+  }
+});
+
+ipcMain.handle("run-git-command", async (event, { cwd, args }) => {
+  try {
+    if (!cwd || typeof cwd !== "string") {
+      return { ok: false, stdout: "", stderr: "Missing cwd", exitCode: 1 };
+    }
+    if (!Array.isArray(args) || args.some((a) => typeof a !== "string")) {
+      return { ok: false, stdout: "", stderr: "Invalid args", exitCode: 1 };
+    }
+
+    // Verify we're inside a git work tree
+    const isRepo = await new Promise((resolve) => {
+      execFile(
+        "git",
+        ["rev-parse", "--is-inside-work-tree"],
+        { cwd, timeout: 8000 },
+        (err, stdout) => {
+          if (err) return resolve(false);
+          resolve(stdout.toString().trim() === "true");
+        }
+      );
+    });
+
+    if (!isRepo) {
+      return {
+        ok: false,
+        stdout: "",
+        stderr: "Not a git repository",
+        exitCode: 1,
+      };
+    }
+
+    const result = await new Promise((resolve) => {
+      execFile(
+        "git",
+        args,
+        {
+          cwd,
+          timeout: 30000,
+          maxBuffer: 10 * 1024 * 1024,
+        },
+        (error, stdout, stderr) => {
+          const exitCode = typeof error?.code === "number" ? error.code : 0;
+          resolve({
+            ok: !error,
+            stdout: (stdout || "").toString(),
+            stderr:
+              (stderr || "").toString() ||
+              (error?.message ? String(error.message) : ""),
+            exitCode,
+          });
+        }
+      );
+    });
+
+    return result;
+  } catch (error) {
+    return {
+      ok: false,
+      stdout: "",
+      stderr: String(error?.message || error),
+      exitCode: 1,
+    };
   }
 });
 
