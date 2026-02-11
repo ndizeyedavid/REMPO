@@ -27,9 +27,10 @@ export default function Sidebar({
         <aside className="flex h-screen w-80 flex-col border-r border-base-content/10 bg-base-300 text-base-content">
             <div className="">
                 <div className="flex items-center gap-3 px-5 py-4">
-                    <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-content">
+                    <img src="../src/assets/logo.png" width="40" height="40" class="size-[40px]" />
+                    {/* <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-content">
                         <Folder className="size-5" />
-                    </div>
+                    </div> */}
                     <div className="min-w-0">
                         <div className="truncate text-lg font-semibold">{title}</div>
                         <div className="truncate text-sm opacity-70">{subtitle}</div>
@@ -88,7 +89,7 @@ export default function Sidebar({
                                             </div>
                                             <div className="flex flex-col justify-start text-left">
                                                 <p className="truncate font-medium">{path.split(/[\\/]/).pop()}</p>
-                                                <p className="truncate text-[10px] opacity-40">{path}</p>
+                                                <p className="truncate text-[10px] opacity-40 w-[95%]" title={path}>{path}</p>
                                             </div>
                                         </button>
 

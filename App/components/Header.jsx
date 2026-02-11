@@ -1,12 +1,14 @@
 import React from "react";
-import { Sidebar, Minus, Square, X } from "lucide-react";
+import { Sidebar, Minus, Square, X, Home } from "lucide-react";
 
 export default function Header({
     status = "Ready to scan",
     left,
     right,
+    setView,
     className = "",
 }) {
+
     return (
         <header
             className={`flex h-12 items-center justify-between border-b border-base-content/10 bg-base-300 px-4 text-base-content select-none ${className}`}
@@ -15,8 +17,8 @@ export default function Header({
         >
             <div className="flex min-w-0 items-center gap-3" style={{ WebkitAppRegion: "no-drag" }}>
                 {left ?? (
-                    <span className="inline-flex size-5 items-center justify-center rounded-md opacity-70 transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer">
-                        <Sidebar className="size-4" />
+                    <span onClick={() => setView("welcome")} className="inline-flex size-5 items-center justify-center rounded-md opacity-70 hover:opacity-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer">
+                        <Home className="size-5" />
                     </span>
                 )}
                 <div className="min-w-0 truncate text-sm opacity-80">{status}</div>

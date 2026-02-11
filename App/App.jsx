@@ -272,6 +272,7 @@ export default function App() {
             <div className="flex min-w-0 flex-1 flex-col">
                 <Header
                     status={view === "scanning" ? "Scanning projects..." : view === "dashboard" ? "Scan complete" : "Ready to scan"}
+                    setView={setView}
                 />
                 <main className="min-h-0 flex-1 bg-base-100 overflow-hidden">
                     <div className="flex h-full items-center justify-center">
