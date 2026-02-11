@@ -268,25 +268,25 @@ export default function Hero() {
             <span className="word" data-delay="0">
               Welcome
             </span>
-            <span className="word" data-delay="200">
+            <span className="word" data-delay="100">
               to
             </span>
-            <span className="word" data-delay="400">
+            <span className="word" data-delay="200">
               <b>StackPilot</b>
             </span>
-            <span className="word" data-delay="600">
+            <span className="word" data-delay="300">
               — 
             </span>
-            <span className="word" data-delay="800">
+            <span className="word" data-delay="400">
               Powering
             </span>
-            <span className="word" data-delay="1000">
+            <span className="word" data-delay="500">
               your
             </span>
-            <span className="word" data-delay="1200">
+            <span className="word" data-delay="600">
               digital
             </span>
-            <span className="word" data-delay="1400">
+            <span className="word" data-delay="700">
               transformation.
             </span>
           </h2>
@@ -305,22 +305,22 @@ export default function Hero() {
             style={{ color: colors[50] }}
           >
             <div className="mb-4 md:mb-6">
-              <span className="word" data-delay="1600">
+              <span className="word" data-delay="800">
                 Supercharge
               </span>
-              <span className="word" data-delay="1750">
+              <span className="word" data-delay="875">
                 your
               </span>
-              <span className="word" data-delay="1900">
+              <span className="word" data-delay="950">
                 productivity
               </span>
-              <span className="word" data-delay="2050">
+              <span className="word" data-delay="1025">
                 with
               </span>
-              <span className="word" data-delay="2200">
+              <span className="word" data-delay="1100">
                 AI-driven
               </span>
-              <span className="word" data-delay="2350">
+              <span className="word" data-delay="1175">
                 automation.
               </span>
             </div>
@@ -328,37 +328,37 @@ export default function Hero() {
               className="text-2xl leading-relaxed font-thin md:text-3xl lg:text-4xl"
               style={{ color: colors[200] }}
             >
-              <span className="word" data-delay="2600">
+              <span className="word" data-delay="1300">
                 Integrate,
               </span>
-              <span className="word" data-delay="2750">
+              <span className="word" data-delay="1375">
                 orchestrate,
               </span>
-              <span className="word" data-delay="2900">
+              <span className="word" data-delay="1450">
                 and
               </span>
-              <span className="word" data-delay="3050">
+              <span className="word" data-delay="1525">
                 scale
               </span>
-              <span className="word" data-delay="3200">
+              <span className="word" data-delay="1600">
                 your
               </span>
-              <span className="word" data-delay="3350">
+              <span className="word" data-delay="1675">
                 business
               </span>
-              <span className="word" data-delay="3500">
+              <span className="word" data-delay="1750">
                 — all
               </span>
-              <span className="word" data-delay="3650">
+              <span className="word" data-delay="1825">
                 in
               </span>
-              <span className="word" data-delay="3800">
+              <span className="word" data-delay="1900">
                 one
               </span>
-              <span className="word" data-delay="3950">
+              <span className="word" data-delay="1975">
                 secure
               </span>
-              <span className="word" data-delay="4100">
+              <span className="word" data-delay="2050">
                 platform.
               </span>
             </div>
