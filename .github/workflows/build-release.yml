@@ -1,0 +1,153 @@
+name: Build and Release Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.0.4). Leave empty to use package.json version'
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+      - 'CHANGELOG.md'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Get version from package.json
+        id: get_version
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Output "tag_name=v$version" >> $env:GITHUB_OUTPUT
+          Write-Output "📦 Package version: $version"
+
+      - name: Check if tag exists
+        id: check_tag
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.get_version.outputs.tag_name }}"
+          git fetch --tags
+          if (git tag -l $tag) {
+            Write-Output "exists=true" >> $env:GITHUB_OUTPUT
+            Write-Output "⚠️ Tag $tag already exists"
+          } else {
+            Write-Output "exists=false" >> $env:GITHUB_OUTPUT
+            Write-Output "✅ Tag $tag does not exist"
+          }
+
+      - name: Create Git tag
+        if: steps.check_tag.outputs.exists == 'false'
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.get_version.outputs.tag_name }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a $tag -m "Release $tag"
+          git push origin $tag
+          Write-Output "🏷️ Created and pushed tag: $tag"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run make
+
+      - name: Find installer
+        id: find_installer
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path "out/make/squirrel.windows/x64" -Filter "*.exe" -Recurse | Select-Object -First 1
+          if ($installer) {
+            Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+            Write-Output "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+            Write-Output "📦 Found installer: $($installer.Name)"
+          } else {
+            # Try alternative paths
+            $installer = Get-ChildItem -Path "out/make" -Filter "*.exe" -Recurse | Select-Object -First 1
+            if ($installer) {
+              Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+              Write-Output "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+              Write-Output "📦 Found installer: $($installer.Name)"
+            } else {
+              Write-Error "❌ No .exe installer found!"
+              exit 1
+            }
+          }
+
+      - name: Extract changelog for version
+        id: get_changelog
+        shell: pwsh
+        run: |
+          $version = "${{ steps.get_version.outputs.version }}"
+          $content = Get-Content CHANGELOG.md -Raw
+          
+          # Find the section for this version
+          $pattern = "## \[?$version\]?.*?(?=## \[|$)"
+          $match = [regex]::Match($content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+          
+          if ($match.Success) {
+            $changelogSection = $match.Value.Trim()
+            # Save to file for release notes
+            $changelogSection | Out-File -FilePath "RELEASE_NOTES.md" -Encoding utf8
+            Write-Output "📝 Extracted changelog for version $version"
+          } else {
+            # Use default release notes
+            "Release v$version of REMPO - Remember what you were building." | Out-File -FilePath "RELEASE_NOTES.md" -Encoding utf8
+            Write-Output "⚠️ No changelog found for version $version, using default"
+          }
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          release_name: REMPO v${{ steps.get_version.outputs.version }}
+          body_path: ./RELEASE_NOTES.md
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.find_installer.outputs.installer_path }}
+          asset_name: ${{ steps.find_installer.outputs.installer_name }}
+          asset_content_type: application/octet-stream
+
+      - name: Release Summary
+        shell: pwsh
+        run: |
+          Write-Output ""
+          Write-Output "=========================================="
+          Write-Output "🎉 RELEASE COMPLETED SUCCESSFULLY!"
+          Write-Output "=========================================="
+          Write-Output "Version: ${{ steps.get_version.outputs.version }}"
+          Write-Output "Tag: ${{ steps.get_version.outputs.tag_name }}"
+          Write-Output "Installer: ${{ steps.find_installer.outputs.installer_name }}"
+          Write-Output "Download: ${{ steps.create_release.outputs.html_url }}"
+          Write-Output "=========================================="
