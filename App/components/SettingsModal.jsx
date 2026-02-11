@@ -594,7 +594,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
 
                   <section className="grid grid-cols-2 gap-4">
                     <button
-                      onClick={() => handleOpenUrl("https://github.com/ndizeyedavid/REMPO/issues/new")}
+                      onClick={() => handleOpenUrl("https://github.com/ndizeyedavid/REMPO/issues/new?template=bug_report.yml")}
                       className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-base-200 border border-base-content/5 hover:border-primary/30 hover:bg-primary/5 transition-all group"
                     >
                       <div className="p-3 rounded-2xl bg-error/10 text-error group-hover:scale-110 transition-transform">
