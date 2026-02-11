@@ -99,7 +99,7 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity }
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-base-300 shadow-2xl z-101 flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="fixed right-0 top-0 pt-6 h-full w-full max-w-lg bg-base-300 shadow-2xl z-101 flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-6 border-b border-base-content/10 flex items-center justify-between">
           <div className="flex items-center gap-4">

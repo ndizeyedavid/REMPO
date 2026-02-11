@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Terminal, X, CornerDownLeft } from "lucide-react";
+import { Terminal, X } from "lucide-react";
+import { Terminal as XTerm } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
+import "xterm/css/xterm.css";
 
 const parseGitArgs = (input) => {
   const s = (input || "").trim();
@@ -45,116 +48,185 @@ const parseGitArgs = (input) => {
 };
 
 export default function GitPalette({ isOpen, onClose, cwd }) {
-  const [command, setCommand] = useState("");
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [entries, setEntries] = useState([]);
   const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
 
-  const inputRef = useRef(null);
-  const scrollRef = useRef(null);
+  const terminalHostRef = useRef(null);
+  const xtermRef = useRef(null);
+  const fitRef = useRef(null);
+  const historyRef = useRef([]);
+  const historyIndexRef = useRef(-1);
+  const inputRef = useRef("");
 
   const folderName = useMemo(() => {
     if (!cwd) return "No folder selected";
     return cwd.split(/[\\/]/).pop();
   }, [cwd]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setTimeout(() => inputRef.current?.focus(), 0);
-  }, [isOpen]);
+  const writePrompt = (term) => {
+    term.write(`\r\n${folderName} $ `);
+  };
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
-  }, [entries, running]);
+  const clearInput = (term) => {
+    const cur = inputRef.current || "";
+    if (!cur) return;
+    term.write("\b \b".repeat(cur.length));
+    inputRef.current = "";
+  };
 
-  const run = async () => {
-    if (!cwd) {
-      setEntries((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          cmd: command,
-          ok: false,
-          stdout: "",
-          stderr: "No active scanned folder selected",
-        },
-      ]);
+  const setInput = (term, next) => {
+    clearInput(term);
+    if (next) term.write(next);
+    inputRef.current = next;
+  };
+
+  const runCommand = async (term, text) => {
+    const args = parseGitArgs(text);
+    if (!args.length) {
+      writePrompt(term);
       return;
     }
 
-    const args = parseGitArgs(command);
-    if (args.length === 0) return;
+    if (!cwd) {
+      term.write("\r\nNo active scanned folder selected\r\n");
+      writePrompt(term);
+      return;
+    }
 
     const cmdText = `git ${args.join(" ")}`;
-    setHistory((prev) => {
-      const next = [cmdText, ...prev];
-      return next.slice(0, 50);
-    });
-    setHistoryIndex(-1);
+    term.write(`\r\n`);
 
+    historyRef.current = [cmdText, ...historyRef.current].slice(0, 50);
+    historyIndexRef.current = -1;
+
+    runningRef.current = true;
     setRunning(true);
     try {
       const res = await window.electronAPI.runGitCommand({ cwd, args });
-      setEntries((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          cmd: cmdText,
-          ok: !!res?.ok,
-          stdout: res?.stdout || "",
-          stderr: res?.stderr || "",
-        },
-      ]);
+      const stdout = (res?.stdout || "").trimEnd();
+      const stderr = (res?.stderr || "").trimEnd();
+      if (stdout) term.write(`${stdout.replace(/\n/g, "\r\n")}\r\n`);
+      if (stderr) term.write(`${stderr.replace(/\n/g, "\r\n")}\r\n`);
     } catch (e) {
-      setEntries((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          cmd: cmdText,
-          ok: false,
-          stdout: "",
-          stderr: String(e?.message || e),
-        },
-      ]);
+      term.write(`${String(e?.message || e).replace(/\n/g, "\r\n")}\r\n`);
     } finally {
+      runningRef.current = false;
       setRunning(false);
-      setCommand("");
+      writePrompt(term);
     }
   };
 
-  const onKeyDown = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      onClose?.();
-      return;
-    }
+  useEffect(() => {
+    if (!isOpen) return;
+    const host = terminalHostRef.current;
+    if (!host) return;
 
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      run();
-      return;
-    }
+    const term = new XTerm({
+      convertEol: true,
+      cursorBlink: true,
+      fontFamily:
+        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+      fontSize: 13,
+      theme: {
+        background: "#0b0b0b",
+      },
+    });
+    const fit = new FitAddon();
+    term.loadAddon(fit);
+    term.open(host);
+    fit.fit();
 
-    if (e.key === "ArrowUp") {
-      if (history.length === 0) return;
-      e.preventDefault();
-      const nextIndex = Math.min(historyIndex + 1, history.length - 1);
-      setHistoryIndex(nextIndex);
-      const h = history[nextIndex] || "";
-      setCommand(h.startsWith("git ") ? h : `git ${h}`);
-      return;
-    }
+    xtermRef.current = term;
+    fitRef.current = fit;
 
-    if (e.key === "ArrowDown") {
-      if (history.length === 0) return;
-      e.preventDefault();
-      const nextIndex = Math.max(historyIndex - 1, -1);
-      setHistoryIndex(nextIndex);
-      const h = nextIndex === -1 ? "" : history[nextIndex] || "";
-      setCommand(h);
-    }
-  };
+    term.write(`Welcome to Rempo Git\r\n`);
+    term.write(`Type git commands like: status, log -5, checkout -b my-branch\r\n`);
+    writePrompt(term);
+
+    const ro = new ResizeObserver(() => {
+      try {
+        fit.fit();
+      } catch (e) { }
+    });
+    ro.observe(host);
+
+    const onKey = (e) => {
+      const key = e.domEvent.key;
+
+      if (key === "Escape") {
+        e.domEvent.preventDefault();
+        onClose?.();
+        return;
+      }
+
+      if (runningRef.current) {
+        if (key === "c" && e.domEvent.ctrlKey) {
+          term.write("^C");
+          writePrompt(term);
+        }
+        return;
+      }
+
+      if (key === "Backspace") {
+        if (inputRef.current.length > 0) {
+          term.write("\b \b");
+          inputRef.current = inputRef.current.slice(0, -1);
+        }
+        return;
+      }
+
+      if (key === "Enter") {
+        const text = inputRef.current;
+        inputRef.current = "";
+        runCommand(term, text);
+        return;
+      }
+
+      if (key === "ArrowUp") {
+        const hist = historyRef.current;
+        if (!hist.length) return;
+        const nextIndex = Math.min(historyIndexRef.current + 1, hist.length - 1);
+        historyIndexRef.current = nextIndex;
+        const cmd = hist[nextIndex] || "";
+        setInput(term, cmd);
+        return;
+      }
+
+      if (key === "ArrowDown") {
+        const hist = historyRef.current;
+        if (!hist.length) return;
+        const nextIndex = Math.max(historyIndexRef.current - 1, -1);
+        historyIndexRef.current = nextIndex;
+        const cmd = nextIndex === -1 ? "" : hist[nextIndex] || "";
+        setInput(term, cmd);
+        return;
+      }
+
+      if (e.domEvent.ctrlKey || e.domEvent.metaKey || e.domEvent.altKey) return;
+      if (!e.key || e.key.length !== 1) return;
+
+      term.write(e.key);
+      inputRef.current += e.key;
+    };
+
+    const keyDisposable = term.onKey(onKey);
+
+    return () => {
+      try {
+        keyDisposable?.dispose?.();
+      } catch (e) { }
+      try {
+        ro.disconnect();
+      } catch (e) { }
+      try {
+        term.dispose();
+      } catch (e) { }
+      xtermRef.current = null;
+      fitRef.current = null;
+      inputRef.current = "";
+      historyIndexRef.current = -1;
+    };
+  }, [isOpen, folderName, cwd, onClose]);
 
   if (!isOpen) return null;
 
@@ -179,56 +251,13 @@ export default function GitPalette({ isOpen, onClose, cwd }) {
               </button>
             </div>
 
-            <div ref={scrollRef} className="max-h-72 overflow-y-auto custom-scrollbar px-5 py-4 space-y-3">
-              {entries.length === 0 ? (
-                <div className="opacity-40 text-sm">
-                  Type a git command (e.g. <span className="font-mono">status</span>, <span className="font-mono">log -5</span>, <span className="font-mono">checkout -b my-branch</span>)
-                </div>
-              ) : (
-                entries.map((e) => (
-                  <div key={e.id} className="space-y-2">
-                    <div className="font-mono text-xs opacity-70">$ {e.cmd}</div>
-                    {(e.stdout || "").trim() && (
-                      <pre className="text-xs bg-base-100/40 border border-base-content/5 rounded-xl p-3 overflow-x-auto">{e.stdout}</pre>
-                    )}
-                    {(e.stderr || "").trim() && (
-                      <pre className={`text-xs border rounded-xl p-3 overflow-x-auto ${e.ok ? "bg-warning/10 border-warning/20" : "bg-error/10 border-error/20"}`}>{e.stderr}</pre>
-                    )}
-                  </div>
-                ))
-              )}
-              {running && (
-                <div className="font-mono text-xs opacity-50">running...</div>
-              )}
-            </div>
-
-            <div className="px-5 py-4 border-t border-base-content/10 bg-base-200/30">
-              <div className="flex items-end gap-3">
-                <div className="flex-1">
-                  <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest ml-1">Command</label>
-                  <input
-                    ref={inputRef}
-                    value={command}
-                    onChange={(e) => setCommand(e.target.value)}
-                    onKeyDown={onKeyDown}
-                    placeholder="git status"
-                    className="input input-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl focus:border-primary/50 font-mono"
-                    disabled={running}
-                  />
-                </div>
-                <button
-                  className="btn btn-primary rounded-xl gap-2"
-                  onClick={run}
-                  disabled={running || !command.trim()}
-                  title="Run (Enter)"
-                >
-                  <CornerDownLeft className="size-4" />
-                  Run
-                </button>
-              </div>
-              <div className="mt-2 text-[10px] opacity-40">
-                Enter to run. Esc to close. Up/Down for history.
-              </div>
+            <div className="px-5 py-4">
+              <div
+                ref={terminalHostRef}
+                className="h-80 w-full rounded-2xl border border-base-content/10 overflow-hidden"
+                style={{ background: "#0b0b0b" }}
+              />
+              <div className="mt-2 text-[10px] opacity-40">Enter to run. Esc to close. Up/Down for history.</div>
             </div>
           </div>
         </div>
