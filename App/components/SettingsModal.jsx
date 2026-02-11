@@ -571,7 +571,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
 
                   <section className="pt-4">
                     <div className="flex items-center justify-between opacity-40">
-                      <span className="text-xs font-bold">App Version: 1.0.4-beta</span>
+                      <span className="text-xs font-bold">App Version: 0.0.4-beta</span>
                       <button className="text-xs font-bold hover:underline">Check for Updates</button>
                     </div>
                   </section>
