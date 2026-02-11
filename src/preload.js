@@ -22,4 +22,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   windowIsMaximized: () => ipcRenderer.invoke("window-is-maximized"),
 
   generateSummary: (data) => ipcRenderer.invoke("generate-summary", data),
+
+  onScanProgress: (callback) => {
+    const handler = (_event, payload) => callback(payload);
+    ipcRenderer.on("scan-progress", handler);
+    return () => ipcRenderer.removeListener("scan-progress", handler);
+  },
 });

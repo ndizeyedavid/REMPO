@@ -221,6 +221,21 @@ Focus on the current state and purpose of the project.`;
 
 ipcMain.handle("scan-repos", async (event, rootPath) => {
   const repos = [];
+  let foldersScanned = 0;
+  let reposFound = 0;
+
+  let lastProgressSentAt = 0;
+  const sendProgress = (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastProgressSentAt < 60) return;
+    lastProgressSentAt = now;
+    try {
+      event.sender.send("scan-progress", {
+        folders: foldersScanned,
+        repos: reposFound,
+      });
+    } catch (e) {}
+  };
 
   const scan = async (dir) => {
     const toPosixRel = (baseDir, absolutePath, isDir) => {
@@ -260,6 +275,9 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
     };
 
     const scanWithIgnore = async (currentDir, matcherStack) => {
+      foldersScanned += 1;
+      sendProgress();
+
       const currentMatcher = {
         baseDir: currentDir,
         ig: loadGitignore(currentDir),
@@ -287,6 +305,9 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
           lastCommit: log.latest?.message || "No commits",
           summary: "Repository found on disk.", // Placeholder for AI summary later
         });
+
+        reposFound += 1;
+        sendProgress(true);
         return; // Stop recursion if .git found
       }
 
@@ -312,7 +333,11 @@ ipcMain.handle("scan-repos", async (event, rootPath) => {
   };
 
   try {
+    // Initial progress ping so UI doesn't stick at 0 while first disk read happens
+    sendProgress(true);
     await scan(rootPath);
+    // Final progress ping
+    sendProgress(true);
     return repos;
   } catch (error) {
     console.error("Scan error:", error);

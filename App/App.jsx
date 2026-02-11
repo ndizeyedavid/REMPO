@@ -128,8 +128,18 @@ export default function App() {
             setView("scanning")
             setScanProgress({ folders: 0, repos: 0 })
 
+            const disposeScanProgress = window.electronAPI?.onScanProgress
+                ? window.electronAPI.onScanProgress(({ folders, repos }) => {
+                    setScanProgress({ folders: folders || 0, repos: repos || 0 });
+                })
+                : null;
+
             // Actual scan
             const repos = await window.electronAPI.scanRepos(folderPath);
+
+            try {
+                disposeScanProgress?.();
+            } catch (e) { }
 
             // Log activity
             await logActivity({
@@ -149,49 +159,35 @@ export default function App() {
             setScanCache(nextCache);
             await window.electronAPI.updateStore("scanCache", nextCache);
 
-            // Simulation-like progress but based on actual results
-            let folders = 0;
-            const interval = setInterval(() => {
-                folders += Math.floor(Math.random() * 8) + 2;
-                setScanProgress({
-                    folders,
-                    repos: Math.floor((folders / 114) * repos.length)
-                });
+            setScannedRepos(repos);
 
-                if (folders >= 114) {
-                    clearInterval(interval);
-                    // console.log(repos);
-                    setScannedRepos(repos);
-
-                    // Auto-summarize first 8 repos if enabled
-                    if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan && settings.ai?.apiKey) {
-                        const first8 = repos.slice(0, 8);
-                        first8.forEach(repo => {
-                            if (!aiResponses[repo.path]) {
-                                window.electronAPI.generateSummary({ repoPath: repo.path })
-                                    .then(res => {
-                                        if (res.ok) {
-                                            setAiResponses(prev => ({
-                                                ...prev,
-                                                [repo.path]: res.summary
-                                            }));
-                                        }
-                                    });
-                            }
-                        });
+            // Auto-summarize first 8 repos if enabled
+            if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan && settings.ai?.apiKey) {
+                const first8 = repos.slice(0, 8);
+                first8.forEach(repo => {
+                    if (!aiResponses[repo.path]) {
+                        window.electronAPI.generateSummary({ repoPath: repo.path })
+                            .then(res => {
+                                if (res.ok) {
+                                    setAiResponses(prev => ({
+                                        ...prev,
+                                        [repo.path]: res.summary
+                                    }));
+                                }
+                            });
                     }
+                });
+            }
 
-                    // Send notification
-                    window.electronAPI.sendNotification({
-                        title: "Scan Complete",
-                        body: `Successfully scanned ${repos.length} repositories in ${folderPath.split(/[\\/]/).pop()}`
-                    });
+            // Send notification
+            window.electronAPI.sendNotification({
+                title: "Scan Complete",
+                body: `Successfully scanned ${repos.length} repositories in ${folderPath.split(/[\\/]/).pop()}`
+            });
 
-                    setTimeout(() => {
-                        setView("dashboard");
-                    }, 500);
-                }
-            }, 50);
+            setTimeout(() => {
+                setView("dashboard");
+            }, 500);
         } catch (error) {
             console.error("Failed to scan:", error);
             toast.error("Failed to scan selected folder");
