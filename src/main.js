@@ -10,6 +10,7 @@ const path = require("node:path");
 const started = require("electron-squirrel-startup");
 const { exec, execFile } = require("child_process");
 const fs = require("fs");
+const pty = require("node-pty");
 const simpleGit = require("simple-git");
 const ignore = require("ignore");
 
@@ -74,6 +75,51 @@ const saveStore = (data) => {
 };
 
 let store = loadStore();
+
+const ptys = new Map();
+
+const resolveGitBashPath = () => {
+  const envPath = process.env.GIT_BASH_PATH;
+  if (envPath && fs.existsSync(envPath)) return envPath;
+
+  if (process.platform !== "win32") return null;
+
+  const candidates = [
+    path.join(process.env.ProgramFiles || "", "Git", "bin", "bash.exe"),
+    path.join(process.env.ProgramFiles || "", "Git", "usr", "bin", "bash.exe"),
+    path.join(process.env["ProgramFiles(x86)"] || "", "Git", "bin", "bash.exe"),
+    path.join(
+      process.env["ProgramFiles(x86)"] || "",
+      "Git",
+      "usr",
+      "bin",
+      "bash.exe"
+    ),
+    path.join(
+      process.env.LocalAppData || "",
+      "Programs",
+      "Git",
+      "bin",
+      "bash.exe"
+    ),
+    path.join(
+      process.env.LocalAppData || "",
+      "Programs",
+      "Git",
+      "usr",
+      "bin",
+      "bash.exe"
+    ),
+  ].filter(Boolean);
+
+  for (const c of candidates) {
+    try {
+      if (c && fs.existsSync(c)) return c;
+    } catch (e) {}
+  }
+
+  return null;
+};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -141,6 +187,64 @@ ipcMain.handle("window-close", (event) => {
 ipcMain.handle("window-is-maximized", (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   return !!win?.isMaximized();
+});
+
+ipcMain.handle("pty-create", (event, { cwd, cols, rows }) => {
+  const shellPath = resolveGitBashPath();
+  if (!shellPath) {
+    return {
+      ok: false,
+      error: "Git Bash not found. Set GIT_BASH_PATH env var to bash.exe.",
+    };
+  }
+
+  const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const p = pty.spawn(shellPath, ["--login", "-i"], {
+    name: "xterm-256color",
+    cols: typeof cols === "number" ? cols : 80,
+    rows: typeof rows === "number" ? rows : 24,
+    cwd: cwd && typeof cwd === "string" ? cwd : process.cwd(),
+    env: { ...process.env },
+  });
+
+  p.onData((data) => {
+    try {
+      event.sender.send("pty-data", { id, data });
+    } catch (e) {}
+  });
+
+  p.onExit(() => {
+    ptys.delete(id);
+    try {
+      event.sender.send("pty-exit", { id });
+    } catch (e) {}
+  });
+
+  ptys.set(id, p);
+  return { ok: true, id };
+});
+
+ipcMain.handle("pty-write", (event, { id, data }) => {
+  const p = ptys.get(id);
+  if (!p) return;
+  if (typeof data !== "string") return;
+  p.write(data);
+});
+
+ipcMain.handle("pty-resize", (event, { id, cols, rows }) => {
+  const p = ptys.get(id);
+  if (!p) return;
+  if (typeof cols !== "number" || typeof rows !== "number") return;
+  p.resize(cols, rows);
+});
+
+ipcMain.handle("pty-dispose", (event, { id }) => {
+  const p = ptys.get(id);
+  if (!p) return;
+  try {
+    p.kill();
+  } catch (e) {}
+  ptys.delete(id);
 });
 
 ipcMain.handle("scan-repos", async (event, rootPath) => {
