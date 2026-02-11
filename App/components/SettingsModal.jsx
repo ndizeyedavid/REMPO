@@ -24,6 +24,44 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
     setLocalSettings(next);
   };
 
+  const handleSetLanguage = (language) => {
+    const next = { ...localSettings, language };
+    setLocalSettings(next);
+  };
+
+  const handleToggleNotificationsEnabled = (enabled) => {
+    const next = {
+      ...localSettings,
+      notifications: {
+        ...(localSettings.notifications || {}),
+        enabled,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleToggleNotificationType = (key, value) => {
+    const next = {
+      ...localSettings,
+      notifications: {
+        ...(localSettings.notifications || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleToggleSystem = (key, value) => {
+    const next = {
+      ...localSettings,
+      system: {
+        ...(localSettings.system || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
   const handleSave = () => {
     onSettingsUpdate("settings", localSettings);
     onClose();
@@ -206,13 +244,17 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="grid grid-cols-2 gap-4">
                     {['English', 'Spanish', 'French', 'German', 'Japanese', 'Chinese'].map((lang) => (
-                      <button key={lang} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${lang === 'English' ? 'bg-primary/5 border-primary text-primary font-bold' : 'border-base-content/10 hover:border-base-content/20'
-                        }`}>
+                      <button
+                        key={lang}
+                        onClick={() => handleSetLanguage(lang)}
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${lang === localSettings.language ? 'bg-primary/5 border-primary text-primary font-bold' : 'border-base-content/10 hover:border-base-content/20'
+                          }`}
+                      >
                         <div className="flex items-center gap-3">
                           <Languages className="size-4 opacity-70" />
                           <span>{lang}</span>
                         </div>
-                        {lang === 'English' && <Check className="size-4" />}
+                        {lang === localSettings.language && <Check className="size-4" />}
                       </button>
                     ))}
                   </div>
@@ -229,15 +271,14 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                           <p className="font-bold">Enable Notifications</p>
                           <p className="text-xs opacity-50">Show desktop alerts for important project updates</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.notifications?.enabled !== false}
+                          onChange={(e) => handleToggleNotificationsEnabled(e.target.checked)}
+                        />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5 opacity-50">
-                        <div>
-                          <p className="font-bold">Play Sound</p>
-                          <p className="text-xs opacity-50">Play a subtle sound for new notifications</p>
-                        </div>
-                        <input type="checkbox" className="toggle toggle-primary" disabled />
-                      </div>
+
                     </div>
                   </section>
 
@@ -245,16 +286,22 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                     <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Alert Types</h4>
                     <div className="space-y-3">
                       {[
-                        { label: "Scan Completed", desc: "Notify when a project scan is finished" },
-                        { label: "New Commits Detected", desc: "Alert when watched repos have new activity" },
-                        { label: "Merge Conflicts", desc: "Immediate alert if a conflict is found during sync" }
+                        { key: "scanCompleted", label: "Scan Completed", desc: "Notify when a project scan is finished" },
+                        { key: "newCommitsDetected", label: "New Commits Detected", desc: "Alert when watched repos have new activity" },
+                        { key: "mergeConflicts", label: "Merge Conflicts", desc: "Immediate alert if a conflict is found during sync" }
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-base-content/10">
                           <div>
                             <p className="font-medium">{item.label}</p>
                             <p className="text-xs opacity-50">{item.desc}</p>
                           </div>
-                          <input type="checkbox" className="checkbox checkbox-primary rounded-lg" defaultChecked />
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-primary rounded-lg"
+                            checked={localSettings.notifications?.[item.key] !== false}
+                            onChange={(e) => handleToggleNotificationType(item.key, e.target.checked)}
+                            disabled={localSettings.notifications?.enabled === false}
+                          />
                         </div>
                       ))}
                     </div>
@@ -269,24 +316,51 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
+                          <p className="font-bold">Open last scanned folder on launch</p>
+                          <p className="text-xs opacity-50">Automatically restore your last scan when the app starts</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.openLastScannedFolderOnLaunch !== false}
+                          onChange={(e) => handleToggleSystem("openLastScannedFolderOnLaunch", e.target.checked)}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
                           <p className="font-bold">Launch at Startup</p>
                           <p className="text-xs opacity-50">Automatically start Rempo when Windows begins</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={!!localSettings.system?.launchAtStartup}
+                          onChange={(e) => handleToggleSystem("launchAtStartup", e.target.checked)}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
                           <p className="font-bold">Hardware Acceleration</p>
                           <p className="text-xs opacity-50">Use GPU for smoother UI rendering (requires restart)</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.hardwareAcceleration !== false}
+                          onChange={(e) => handleToggleSystem("hardwareAcceleration", e.target.checked)}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
                           <p className="font-bold">Minimize to Tray</p>
                           <p className="text-xs opacity-50">Keep the app running in the system tray when closed</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.minimizeToTray !== false}
+                          onChange={(e) => handleToggleSystem("minimizeToTray", e.target.checked)}
+                        />
                       </div>
                     </div>
                   </section>
@@ -303,7 +377,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                           <p className="text-xs opacity-50">C:\Users\Developer\AppData\Roaming\Rempo\db</p>
                         </div>
                       </div>
-                      <button className="btn btn-ghost btn-sm rounded-lg border border-base-content/10">Change</button>
+                      {/* <button className="btn btn-ghost btn-sm rounded-lg border border-base-content/10">Change</button> */}
                     </div>
                   </section>
 

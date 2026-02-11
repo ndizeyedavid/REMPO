@@ -5,6 +5,8 @@ const {
   dialog,
   shell,
   Notification,
+  Tray,
+  Menu,
 } = require("electron");
 const path = require("node:path");
 const started = require("electron-squirrel-startup");
@@ -34,6 +36,19 @@ const DEFAULT_STORE = {
       provider: "groq",
       apiKey: "",
     },
+    notifications: {
+      enabled: true,
+      scanCompleted: true,
+      newCommitsDetected: true,
+      mergeConflicts: true,
+    },
+    system: {
+      openLastScannedFolderOnLaunch: true,
+      launchAtStartup: false,
+      hardwareAcceleration: true,
+      minimizeToTray: true,
+    },
+    language: "English",
   },
 };
 
@@ -66,6 +81,14 @@ const mergeStore = (data) => {
       ...DEFAULT_STORE.settings.ai,
       ...(data.settings?.ai || {}),
     },
+    notifications: {
+      ...DEFAULT_STORE.settings.notifications,
+      ...(data.settings?.notifications || {}),
+    },
+    system: {
+      ...DEFAULT_STORE.settings.system,
+      ...(data.settings?.system || {}),
+    },
   };
 
   return merged;
@@ -94,6 +117,65 @@ const saveStore = (data) => {
 
 let store = loadStore();
 
+let tray = null;
+let mainWindowRef = null;
+
+const ensureTray = () => {
+  try {
+    if (tray) return tray;
+    if (
+      process.platform !== "win32" &&
+      process.platform !== "darwin" &&
+      process.platform !== "linux"
+    ) {
+      return null;
+    }
+
+    const iconPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "src",
+      "assets",
+      "logo.png"
+    );
+    tray = new Tray(iconPath);
+    tray.setToolTip("Rempo");
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: "Show Rempo",
+        click: () => {
+          if (!mainWindowRef) return;
+          try {
+            mainWindowRef.show();
+            mainWindowRef.focus();
+          } catch (e) {}
+        },
+      },
+      {
+        label: "Quit",
+        click: () => {
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setContextMenu(contextMenu);
+    tray.on("double-click", () => {
+      if (!mainWindowRef) return;
+      try {
+        mainWindowRef.show();
+        mainWindowRef.focus();
+      } catch (e) {}
+    });
+
+    return tray;
+  } catch (e) {
+    return null;
+  }
+};
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -115,6 +197,19 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
+  });
+
+  mainWindowRef = mainWindow;
+
+  mainWindow.on("close", (e) => {
+    try {
+      const minimizeToTray = store.settings?.system?.minimizeToTray !== false;
+      if (minimizeToTray) {
+        e.preventDefault();
+        ensureTray();
+        mainWindow.hide();
+      }
+    } catch (err) {}
   });
 
   // and load the index.html of the app.
@@ -515,9 +610,26 @@ ipcMain.handle("open-in-browser", async (event, url) => {
 });
 
 ipcMain.handle("send-notification", (event, { title, body }) => {
-  if (Notification.isSupported()) {
-    new Notification({ title, body }).show();
-  }
+  try {
+    const notifications = store.settings?.notifications;
+    if (notifications && notifications.enabled === false) return;
+
+    // Optional type gating (backwards compatible)
+    const type = arguments?.[1]?.type;
+    if (type && notifications) {
+      const typeMap = {
+        scanCompleted: "scanCompleted",
+        newCommitsDetected: "newCommitsDetected",
+        mergeConflicts: "mergeConflicts",
+      };
+      const key = typeMap[type];
+      if (key && notifications[key] === false) return;
+    }
+
+    if (Notification.isSupported()) {
+      new Notification({ title, body }).show();
+    }
+  } catch (e) {}
 });
 
 ipcMain.handle("run-git-command", async (event, { cwd, args }) => {

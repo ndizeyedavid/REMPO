@@ -30,6 +30,16 @@ export default function App() {
             provider: "groq",
             apiKey: "",
         },
+        notifications: {
+            enabled: true,
+            scanCompleted: true,
+            newCommitsDetected: true,
+            mergeConflicts: true,
+        },
+        system: {
+            openLastScannedFolderOnLaunch: true,
+        },
+        language: "English",
     })
     const [aiResponses, setAiResponses] = useState({})
 
@@ -51,6 +61,15 @@ export default function App() {
                 if (store.aiResponses) setAiResponses(store.aiResponses);
                 if (store.lastScannedFolder) {
                     console.log("Last scanned folder:", store.lastScannedFolder);
+                }
+
+                const openLast = store.settings?.system?.openLastScannedFolderOnLaunch !== false;
+                const last = store.lastScannedFolder;
+                const cached = last ? store.scanCache?.[last] : null;
+                if (openLast && last && cached?.repos && Array.isArray(cached.repos) && cached.repos.length > 0) {
+                    setActiveFolderPath(last);
+                    setScannedRepos(cached.repos);
+                    setView("dashboard");
                 }
             } catch (error) {
                 console.error("Failed to load store:", error);
@@ -189,6 +208,7 @@ export default function App() {
             // Send notification
             window.electronAPI.sendNotification({
                 title: "Scan Complete",
+                type: "scanCompleted",
                 body: `Successfully scanned ${repos.length} repositories in ${folderPath.split(/[\\/]/).pop()}`
             });
 
