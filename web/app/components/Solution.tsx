@@ -6,6 +6,10 @@ import {
   User,
   User2,
   LucideIcon,
+  Stars,
+  HardDrive,
+  Keyboard,
+  Link2Icon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,25 +26,25 @@ type FeatureItem = {
 const leftFeatures: FeatureItem[] = [
   {
     icon: Building2,
-    title: "Taught by Professionals",
+    title: "Real-time Repository Status",
     description:
-      "Learn directly from top engineers and founders with real-world experience.",
+      "Monitor the status of all your repositories in real-time with instant updates and alerts.",
     position: "left",
     cornerStyle: "sm:translate-x-4 sm:rounded-br-[2px]",
   },
   {
-    icon: User2,
-    title: "Coding Hostels",
+    icon: HardDrive,
+    title: "Smart Caching System",
     description:
-      "Join virtual hostels to study, collaborate, and vibe with fellow learners.",
+      "Experience lightning-fast performance with our intelligent caching mechanism that optimizes data retrieval.",
     position: "left",
     cornerStyle: "sm:-translate-x-4 sm:rounded-br-[2px]",
   },
   {
-    icon: Trophy,
-    title: "Bounties",
+    icon: Stars,
+    title: "AI-Powered Summaries",
     description:
-      "Win rewards for solving challenges, contributing to projects, and helping peers.",
+      "Get intelligent summaries of commits, changes, and repository activity powered by advanced AI.",
     position: "left",
     cornerStyle: "sm:translate-x-4 sm:rounded-tr-[2px]",
   },
@@ -49,25 +53,25 @@ const leftFeatures: FeatureItem[] = [
 const rightFeatures: FeatureItem[] = [
   {
     icon: ScreenShare,
-    title: "Revision Classes",
+    title: "Beautiful Themes",
     description:
-      "Stay sharp with weekly revision sessions and topic refreshers.",
+      "Choose from 9 stunning themes that make managing your repositories a pleasure.",
     position: "right",
     cornerStyle: "sm:-translate-x-4 sm:rounded-bl-[2px]",
   },
   {
-    icon: User,
-    title: "Peer Code Reviews",
+    icon: Keyboard,
+    title: "Keyboard Shortcuts",
     description:
-      "Improve faster with feedback from mentors and batchmates on your actual code.",
+      "Boost your productivity with powerful keyboard shortcuts including Ctrl+K for instant terminal access.",
     position: "right",
     cornerStyle: "sm:translate-x-4 sm:rounded-bl-[2px]",
   },
   {
-    icon: Lightbulb,
-    title: "Leet Lab",
+    icon: Link2Icon,
+    title: "System Integration",
     description:
-      "Ace coding interviews with daily DSA problems, contests, and tracking.",
+      "Minimize to tray, launch at startup, and seamlessly integrate REMPO into your workflow.",
     position: "right",
     cornerStyle: "sm:-translate-x-4 sm:rounded-tl-[2px]",
   },
@@ -83,7 +87,7 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
         className={cn(
           "relative rounded-2xl px-4 pt-4 pb-4 text-sm",
           "bg-secondary/50 ring-border ring",
-          feature.cornerStyle
+          feature.cornerStyle,
         )}
       >
         <div className="text-primary mb-3 text-[2rem]">
@@ -117,17 +121,16 @@ export default function Solutions() {
           <div className="order-[1] mb-6 self-center sm:order-[0] md:mb-0">
             <div className="bg-secondary text-foreground ring-border relative mx-auto mb-4.5 w-fit rounded-full rounded-bl-[2px] px-4 py-2 text-sm ring">
               <span className="relative z-1 flex items-center gap-2">
-                Features
+                Solutions
               </span>
               <span className="from-primary/0 via-primary to-primary/0 absolute -bottom-px left-1/2 h-px w-2/5 -translate-x-1/2 bg-gradient-to-r"></span>
               <span className="absolute inset-0 bg-[radial-gradient(30%_40%_at_50%_100%,hsl(var(--primary)/0.25)_0%,transparent_100%)]"></span>
             </div>
             <h2 className="text-foreground mb-2 text-center text-2xl sm:mb-2.5 md:text-[2rem]">
-              Key Benefits of Cohorts
+              Why Choose REMPO?
             </h2>
             <p className="text-muted-foreground mx-auto max-w-[18rem] text-center text-pretty">
-              Cohorts are best way to learn because you finish the course in a
-              timely manner
+              REMPO combines powerful repository management and intelligent.
             </p>
           </div>
 

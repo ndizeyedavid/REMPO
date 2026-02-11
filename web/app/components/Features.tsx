@@ -8,36 +8,36 @@ import { Rocket, Code, Paintbrush } from "lucide-react";
 const features = [
   {
     step: "Step 1",
-    title: "Build Faster",
+    title: "Scan & Discover",
     content:
-      "Create your MVP in record time with our pre-built blocks and components.",
+      "Automatically discover all Git repositories across your system with our global scanning feature.",
     icon: <Rocket className="text-primary h-6 w-6" />,
     image:
       "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop",
   },
   {
     step: "Step 2",
-    title: "Customize Easily",
+    title: "Visualize & Track",
     content:
-      "Tailor every component to your needs with our intuitive design system and flexible architecture.",
+      "View repository status, commit history, and changes at a glance with a beautiful, intuitive interface.",
     icon: <Paintbrush className="text-primary h-6 w-6" />,
     image:
       "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=2070&auto=format&fit=crop",
   },
   {
     step: "Step 3",
-    title: "Deploy Confidently",
+    title: "Build & Deploy",
     content:
-      "Launch your product with confidence using our optimized, responsive, and accessible components.",
+      "Execute Git operations directly from the terminal with smart caching and optimized performance.",
     icon: <Code className="text-primary h-6 w-6" />,
     image:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
   },
   {
     step: "Step 4",
-    title: "Add Yours!",
+    title: "Analyze with AI",
     content:
-      "Contribute your own blocks and become part of the MVPBlocks community.",
+      "Get AI-powered summaries and insights about your repositories with lazy loading for optimal speed.",
     icon: <Code className="text-primary h-6 w-6" />,
     image:
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
@@ -67,11 +67,11 @@ export default function Features() {
         <div className="relative mx-auto mb-12 max-w-2xl sm:text-center">
           <div className="relative z-10">
             <h2 className="font-geist text-3xl font-bold tracking-tighter md:text-4xl lg:text-5xl">
-              Build Your MVP in Three Steps
+              Features
             </h2>
             <p className="font-geist text-foreground/60 mt-3">
-              MVPBlocks helps you create, customize, and deploy your product
-              faster than ever before.
+              REMPO makes it easy to manage your Git ecosystem with powerful
+              scanning, real-time updates, and AI insights.
             </p>
           </div>
           <div
@@ -103,7 +103,7 @@ export default function Features() {
                     "flex h-12 w-12 items-center justify-center rounded-full border-2 md:h-14 md:w-14",
                     index === currentFeature
                       ? "border-primary bg-primary/10 text-primary scale-110 [box-shadow:0_0_15px_rgba(192,15,102,0.3)]"
-                      : "border-muted-foreground bg-muted"
+                      : "border-muted-foreground bg-muted",
                   )}
                 >
                   {feature.icon}
@@ -123,7 +123,7 @@ export default function Features() {
 
           <div
             className={cn(
-              "border-primary/20 relative order-1 h-[200px] overflow-hidden rounded-xl border [box-shadow:0_5px_30px_-15px_rgba(192,15,102,0.3)] md:order-2 md:h-[300px] lg:h-[400px]"
+              "border-primary/20 relative order-1 h-[200px] overflow-hidden rounded-xl border [box-shadow:0_5px_30px_-15px_rgba(192,15,102,0.3)] md:order-2 md:h-[300px] lg:h-[400px]",
             )}
           >
             <AnimatePresence mode="wait">
@@ -153,7 +153,7 @@ export default function Features() {
                         </span>
                       </div>
                     </motion.div>
-                  )
+                  ),
               )}
             </AnimatePresence>
           </div>

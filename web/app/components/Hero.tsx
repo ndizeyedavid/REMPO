@@ -96,7 +96,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <div className="font-primary relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#1a1d18] via-black to-[#2a2e26] text-[#e6e1d7]">
+    <div className="font-primary relative min-h-screen w-full pt-10 overflow-hidden bg-gradient-to-br from-[#1a1d18] via-black to-[#2a2e26] text-[#e6e1d7]">
       <svg
         className="absolute inset-0 h-full w-full"
         xmlns="http://www.w3.org/2000/svg"
@@ -272,22 +272,25 @@ export default function Hero() {
               to
             </span>
             <span className="word" data-delay="200">
-              <b>StackPilot</b>
+              <b>REMPO</b>
             </span>
             <span className="word" data-delay="300">
-              — 
+              —
             </span>
             <span className="word" data-delay="400">
-              Powering
+              Remember
             </span>
             <span className="word" data-delay="500">
-              your
+              what
             </span>
             <span className="word" data-delay="600">
-              digital
+              you
             </span>
             <span className="word" data-delay="700">
-              transformation.
+              were
+            </span>
+            <span className="word" data-delay="800">
+              building.
             </span>
           </h2>
           <div
@@ -305,23 +308,26 @@ export default function Hero() {
             style={{ color: colors[50] }}
           >
             <div className="mb-4 md:mb-6">
-              <span className="word" data-delay="800">
-                Supercharge
+              <span className="word" data-delay="900">
+                Discover,
               </span>
-              <span className="word" data-delay="875">
+              <span className="word" data-delay="975">
+                visualize,
+              </span>
+              <span className="word" data-delay="1050">
+                and
+              </span>
+              <span className="word" data-delay="1125">
+                manage
+              </span>
+              <span className="word" data-delay="1200">
                 your
               </span>
-              <span className="word" data-delay="950">
-                productivity
+              <span className="word" data-delay="1275">
+                Git
               </span>
-              <span className="word" data-delay="1025">
-                with
-              </span>
-              <span className="word" data-delay="1100">
-                AI-driven
-              </span>
-              <span className="word" data-delay="1175">
-                automation.
+              <span className="word" data-delay="1350">
+                repositories.
               </span>
             </div>
             <div
@@ -394,22 +400,22 @@ export default function Hero() {
             style={{ color: colors[200] }}
           >
             <span className="word" data-delay="4400">
-              Real-time
+              Repository
             </span>
             <span className="word" data-delay="4550">
-              analytics,
+              scanning,
             </span>
             <span className="word" data-delay="4700">
-              seamless
+              smart
             </span>
             <span className="word" data-delay="4850">
-              integrations,
+              caching,
             </span>
             <span className="word" data-delay="5000">
-              enterprise-grade
+              terminal
             </span>
             <span className="word" data-delay="5150">
-              security.
+              integration.
             </span>
           </h2>
           <div

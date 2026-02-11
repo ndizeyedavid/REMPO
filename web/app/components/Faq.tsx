@@ -14,75 +14,75 @@ import { BorderBeam } from "@/components/ui/border-beam";
 const data = [
   {
     id: "1",
-    question: "How can I start using your amazing service?",
+    question: "How do I start scanning my repositories?",
     answer:
-      "Getting started is easy! Simply sign up for an account, complete your profile, and you can begin using our services immediately. No credit card required for the first 14 days.",
+      "Getting started is simple! Open REMPO and click the 'Scan' button. It will automatically discover all Git repositories on your system. You can customize the scan paths in settings if needed.",
   },
   {
     id: "2",
-    question: "Which payment methods are supported on your platform?",
+    question: "Does REMPO support all Git repository formats?",
     answer:
-      "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers for annual plans. All payments are securely processed through encrypted channels.",
+      "Yes! REMPO works with all standard Git repositories, whether they're hosted on GitHub, GitLab, Bitbucket, or self-hosted servers. Any valid Git repository will be discovered and managed.",
   },
   {
     id: "3",
-    question: "Can I cancel my subscription anytime I want?",
+    question: "Can I use REMPO offline?",
     answer:
-      "Yes, you can cancel your subscription at any time from your account settings. There are no cancellation fees, and you will continue to have access until the end of your billing period.",
+      "Absolutely! REMPO works offline for viewing repository information and using the terminal. However, some cloud-based AI features may require an internet connection for optimal performance.",
   },
   {
     id: "4",
-    question: "Do you provide enterprise custom solutions for businesses?",
+    question: "How does the AI summarization work?",
     answer:
-      "Absolutely! We provide custom enterprise solutions with dedicated support, advanced features, and personalized onboarding. Contact our sales team to discuss your specific requirements.",
+      "REMPO uses advanced AI to analyze commit messages, changes, and repository activity to generate intelligent summaries. The AI learns from your repository patterns to provide increasingly accurate insights over time.",
   },
   {
     id: "5",
-    question: "How secure is user data on your platform?",
+    question: "What themes are available?",
     answer:
-      "We take security seriously. Our platform uses bank-level encryption, regular security audits, and complies with industry standards. Your data is stored in secure SOC 2 certified data centers.",
+      "REMPO comes with 9 beautiful, carefully designed themes ranging from light to dark modes. Each theme is optimized for different lighting conditions and personal preferences to reduce eye strain.",
   },
   {
     id: "6",
-    question: "Is a completely free trial currently available now?",
+    question: "How can I access the terminal?",
     answer:
-      "Yes! We offer a 14-day free trial with full access to all features. No credit card is required to sign up for the trial.",
+      "Press Ctrl+K to instantly open the integrated terminal at any time. The terminal is fully integrated with REMPO and respects your current repository context for faster Git operations.",
   },
   {
     id: "7",
-    question: "Do you provide customer support for all users?",
+    question: "Does REMPO store my repositories?",
     answer:
-      "Absolutely! Our dedicated support team is available 24/7 via chat and email to help you resolve any issues.",
+      "No, REMPO never stores your repositories in the cloud by default. It only reads and analyzes local repositories on your system. Your code stays on your machine under your full control.",
   },
   {
     id: "8",
-    question: "Can I upgrade or downgrade my plan anytime?",
+    question: "Can I customize keyboard shortcuts?",
     answer:
-      "Yes, you can change your subscription plan at any time from your account settings. Your billing will be adjusted automatically.",
+      "Yes, all keyboard shortcuts are fully customizable. Go to Settings > Keyboard Shortcuts to rebind commands to your preferred keys.",
   },
   {
     id: "9",
-    question: "Do you integrate with any popular third-party tools?",
+    question: "What are the system requirements?",
     answer:
-      "We integrate with popular platforms like Slack, Google Workspace, and Zapier to streamline your workflow.",
+      "REMPO runs on Windows, macOS, and Linux. You'll need Git installed on your system. Minimum requirements: 2GB RAM and 500MB disk space.",
   },
   {
     id: "10",
-    question: "What happens after the free trial period ends?",
+    question: "How often does REMPO scan for changes?",
     answer:
-      "When your trial ends, you can choose a subscription plan to continue using the service. Your data will remain saved for 30 days.",
+      "REMPO provides real-time updates by default with configurable scan intervals. You can set custom scan frequencies in settings, from continuous updates to manual scans only.",
   },
   {
     id: "11",
-    question: "Do you offer refunds for unsatisfied subscribed users?",
+    question: "Is there a mobile version?",
     answer:
-      "Yes, we offer a 7-day money-back guarantee if you're not satisfied with the service. Please contact support for assistance.",
+      "Currently, REMPO is available for desktop platforms (Windows, macOS, Linux). We're exploring mobile integration for future releases.",
   },
   {
     id: "12",
-    question: "Is my information shared with any third parties?",
+    question: "How do I report bugs or suggest features?",
     answer:
-      "No, we do not share or sell your personal information. Your privacy and data security are our top priorities.",
+      "You can report bugs and suggest features directly from REMPO's Help menu, or visit our GitHub repository. We read and respond to all feedback from the community.",
   },
 ];
 

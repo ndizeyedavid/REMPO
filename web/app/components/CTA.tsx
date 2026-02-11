@@ -13,14 +13,13 @@ export default function CTA() {
               <h2 className="mb-6 text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
                 Ready to{" "}
                 <span className="bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
-                  Transform
-                </span>{" "}
-                Your Marketing?
+                  Stay Organized?
+                </span>
               </h2>
               <p className="text-muted-foreground mb-8 text-lg">
-                96% of visitors leave websites without taking action. Our
-                conversion-optimized funnels recapture those lost opportunities
-                and turn them into predictable revenue.
+                Developers worldwide are using REMPO to manage their Git
+                repositories with ease. Take control of your projects today with
+                our beautiful, intelligent dashboard.
               </p>
 
               <div className="space-y-6">
@@ -49,10 +48,11 @@ export default function CTA() {
                   </div>
                   <div>
                     <h3 className="font-heading text-lg font-bold text-white">
-                      Free Strategy Session
+                      Discover All Your Repos
                     </h3>
                     <p className="text-muted-foreground">
-                      No obligation, just pure value for your business.
+                      Automatically scan and discover all your Git repositories
+                      in seconds.
                     </p>
                   </div>
                 </div>
@@ -82,11 +82,11 @@ export default function CTA() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white">
-                      Custom Funnel Blueprint
+                      Beautiful Dashboard Interface
                     </h3>
                     <p className="text-muted-foreground">
-                      Walk away with actionable insights regardless of who you
-                      work with.
+                      Experience one of 9 beautiful themes that make managing
+                      repos enjoyable.
                     </p>
                   </div>
                 </div>
@@ -116,25 +116,25 @@ export default function CTA() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white">
-                      ROI Projection
+                      AI-Powered Insights
                     </h3>
                     <p className="text-muted-foreground">
-                      See the potential impact on your revenue before you
-                      invest.
+                      Get intelligent summaries and insights about your
+                      repositories instantly.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 p-8 text-white md:p-12 lg:p-16">
+            <div className="relative flex flex-col justify-center overflow-hidden bg-[#03487f] p-8 text-white md:p-12 lg:p-16">
               <div className="absolute top-0 right-0 h-full w-full opacity-10"></div>
               <div className="relative z-10">
                 <h3 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
-                  Don&apos;t Let Another Day Pass With A Leaky Marketing Funnel
+                  Manage Git Repositories Like Never Before
                 </h3>
                 <p className="mb-8 text-white/80">
-                  Every day with an underperforming funnel is costing you:
+                  REMPO brings together all the tools you need:
                 </p>
 
                 <div className="space-y-6">
@@ -143,7 +143,7 @@ export default function CTA() {
                       1
                     </div>
                     <p className="text-lg">
-                      Qualified leads that never convert
+                      Global scanning discovers all your repositories
                     </p>
                   </div>
 
@@ -151,7 +151,9 @@ export default function CTA() {
                     <div className="mr-4 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-lg font-bold">
                       2
                     </div>
-                    <p className="text-lg">Revenue that goes to competitors</p>
+                    <p className="text-lg">
+                      Real-time status updates and commit tracking
+                    </p>
                   </div>
 
                   <div className="flex items-center">
@@ -159,19 +161,18 @@ export default function CTA() {
                       3
                     </div>
                     <p className="text-lg">
-                      Wasted ad spend on traffic that doesn&apos;t convert
+                      Built-in terminal with keyboard shortcuts (Ctrl+K)
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-10 rounded-xl bg-white/10 p-6 backdrop-blur">
                   <p className="text-lg font-medium">
-                    &quot;We increased our conversion rate from 1.7% to 6.3% in
-                    just 31 days after implementing Freedom Funnels&apos;
-                    system.&quot;
+                    &quot;REMPO transformed how I manage my repositories. It's
+                    beautiful, fast, and incredibly powerful.&quot;
                   </p>
                   <p className="mt-3 font-medium text-white/70">
-                    — Ryan Miller, CEO, Apex Solutions
+                    — Alex Chen, Senior Developer
                   </p>
                 </div>
               </div>

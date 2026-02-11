@@ -11,7 +11,7 @@ import Faq from "./components/Faq";
 export default function page() {
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       <Hero />
       <Technologies />
       <Features />

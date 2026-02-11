@@ -5,11 +5,13 @@ export default function Technologies() {
     <div className="overflow-hidden bg-[#121212]">
       <div className="mx-auto mt-32 w-screen max-w-2xl">
         <div className="text-center text-3xl text-white">
-          <span className="text-rose-200">Trusted by experts.</span>
+          <span className="text-[#c8b4a0]">
+            Built with modern technologies.
+          </span>
 
           <br />
 
-          <span>Used by the leaders.</span>
+          <span>Powered by the best tools.</span>
         </div>
 
         <div className="mt-14 grid grid-cols-5">
