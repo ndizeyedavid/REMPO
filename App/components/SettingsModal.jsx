@@ -5,8 +5,101 @@ import {
   Moon, Sun, Monitor, Languages, Terminal
 } from "lucide-react";
 
-export default function SettingsModal({ onClose, currentTheme, onThemeChange }) {
+export default function SettingsModal({ onClose, currentTheme, onThemeChange, settings, onSettingsUpdate }) {
   const [activeTab, setActiveTab] = useState("personalization");
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  const handleToggleAi = (enabled) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, enabled } };
+    setLocalSettings(next);
+  };
+
+  const handleToggleAutoSummarize = (autoSummarizeOnScan) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, autoSummarizeOnScan } };
+    setLocalSettings(next);
+  };
+
+  const handleApiKeyChange = (apiKey) => {
+    const next = { ...localSettings, ai: { ...localSettings.ai, apiKey } };
+    setLocalSettings(next);
+  };
+
+  const handleSetLanguage = (language) => {
+    const next = { ...localSettings, language };
+    setLocalSettings(next);
+  };
+
+  const handleToggleNotificationsEnabled = (enabled) => {
+    const next = {
+      ...localSettings,
+      notifications: {
+        ...(localSettings.notifications || {}),
+        enabled,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleToggleNotificationType = (key, value) => {
+    const next = {
+      ...localSettings,
+      notifications: {
+        ...(localSettings.notifications || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleToggleSystem = (key, value) => {
+    const next = {
+      ...localSettings,
+      system: {
+        ...(localSettings.system || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleSetTerminal = (key, value) => {
+    const next = {
+      ...localSettings,
+      terminal: {
+        ...(localSettings.terminal || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleSetScan = (key, value) => {
+    const next = {
+      ...localSettings,
+      scan: {
+        ...(localSettings.scan || {}),
+        [key]: value,
+      },
+    };
+    setLocalSettings(next);
+  };
+
+  const handleClearScanCache = async () => {
+    await onSettingsUpdate("scanCache", {});
+  };
+
+  const handleClearAiSummaries = async () => {
+    await onSettingsUpdate("aiResponses", {});
+  };
+
+  const handleClearActivities = async () => {
+    await onSettingsUpdate("activities", []);
+  };
+
+  const handleSave = () => {
+    onSettingsUpdate("settings", localSettings);
+    onClose();
+  };
 
   const themes = [
     { id: "light", label: "Light Mode", icon: Sun, color: "bg-slate-50", textColor: "text-slate-900" },
@@ -32,12 +125,12 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md z-200 animate-in fade-in duration-300"
         onClick={onClose}
       />
 
       {/* Modal Container */}
-      <div className="fixed inset-0 flex items-center justify-center z-[201] p-4 pointer-events-none">
+      <div className="fixed inset-0 flex items-center justify-center z-201 p-4 pointer-events-none">
         <div className="bg-base-300 w-full max-w-4xl h-[600px] rounded-3xl shadow-2xl border border-base-content/10 overflow-hidden flex pointer-events-auto animate-in zoom-in-95 duration-300">
 
           {/* Sidebar Navigation */}
@@ -137,22 +230,45 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
 
                   <div className="form-control w-full">
                     <label className="label">
-                      <span className="label-text font-bold">Summary Verbosity</span>
+                      <span className="label-text font-bold">Groq API Key</span>
                     </label>
-                    <input type="range" min="0" max="100" value="70" className="range range-primary range-sm" />
-                    <div className="w-full flex justify-between text-xs px-2 mt-2 opacity-40 uppercase font-bold tracking-tighter">
-                      <span>Concise</span>
-                      <span>Detailed</span>
-                    </div>
+                    <input
+                      type="password"
+                      placeholder="gsk_..."
+                      className="input input-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl focus:border-primary/50"
+                      value={localSettings.ai?.apiKey || ""}
+                      onChange={(e) => handleApiKeyChange(e.target.value)}
+                    />
+                    <label className="label">
+                      <span className="label-text-alt opacity-50">Get your key from groq.com</span>
+                    </label>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                       <div>
+                        <p className="font-bold">Enable AI Features</p>
+                        <p className="text-xs opacity-50">Master switch for all AI-powered functionality</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={localSettings.ai?.enabled}
+                        onChange={(e) => handleToggleAi(e.target.checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                      <div>
                         <p className="font-bold">Auto-summarize new repos</p>
                         <p className="text-xs opacity-50">Summarize projects immediately after scanning</p>
                       </div>
-                      <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={localSettings.ai?.autoSummarizeOnScan}
+                        onChange={(e) => handleToggleAutoSummarize(e.target.checked)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -162,13 +278,17 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="grid grid-cols-2 gap-4">
                     {['English', 'Spanish', 'French', 'German', 'Japanese', 'Chinese'].map((lang) => (
-                      <button key={lang} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${lang === 'English' ? 'bg-primary/5 border-primary text-primary font-bold' : 'border-base-content/10 hover:border-base-content/20'
-                        }`}>
+                      <button
+                        key={lang}
+                        onClick={() => handleSetLanguage(lang)}
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${lang === localSettings.language ? 'bg-primary/5 border-primary text-primary font-bold' : 'border-base-content/10 hover:border-base-content/20'
+                          }`}
+                      >
                         <div className="flex items-center gap-3">
                           <Languages className="size-4 opacity-70" />
                           <span>{lang}</span>
                         </div>
-                        {lang === 'English' && <Check className="size-4" />}
+                        {lang === localSettings.language && <Check className="size-4" />}
                       </button>
                     ))}
                   </div>
@@ -185,15 +305,14 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
                           <p className="font-bold">Enable Notifications</p>
                           <p className="text-xs opacity-50">Show desktop alerts for important project updates</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.notifications?.enabled !== false}
+                          onChange={(e) => handleToggleNotificationsEnabled(e.target.checked)}
+                        />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5 opacity-50">
-                        <div>
-                          <p className="font-bold">Play Sound</p>
-                          <p className="text-xs opacity-50">Play a subtle sound for new notifications</p>
-                        </div>
-                        <input type="checkbox" className="toggle toggle-primary" disabled />
-                      </div>
+
                     </div>
                   </section>
 
@@ -201,16 +320,22 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
                     <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Alert Types</h4>
                     <div className="space-y-3">
                       {[
-                        { label: "Scan Completed", desc: "Notify when a project scan is finished" },
-                        { label: "New Commits Detected", desc: "Alert when watched repos have new activity" },
-                        { label: "Merge Conflicts", desc: "Immediate alert if a conflict is found during sync" }
+                        { key: "scanCompleted", label: "Scan Completed", desc: "Notify when a project scan is finished" },
+                        { key: "newCommitsDetected", label: "New Commits Detected", desc: "Alert when watched repos have new activity" },
+                        { key: "mergeConflicts", label: "Merge Conflicts", desc: "Immediate alert if a conflict is found during sync" }
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-base-content/10">
                           <div>
                             <p className="font-medium">{item.label}</p>
                             <p className="text-xs opacity-50">{item.desc}</p>
                           </div>
-                          <input type="checkbox" className="checkbox checkbox-primary rounded-lg" defaultChecked />
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-primary rounded-lg"
+                            checked={localSettings.notifications?.[item.key] !== false}
+                            onChange={(e) => handleToggleNotificationType(item.key, e.target.checked)}
+                            disabled={localSettings.notifications?.enabled === false}
+                          />
                         </div>
                       ))}
                     </div>
@@ -225,24 +350,65 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
+                          <p className="font-bold">Open last scanned folder on launch</p>
+                          <p className="text-xs opacity-50">Automatically restore your last scan when the app starts</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.openLastScannedFolderOnLaunch !== false}
+                          onChange={(e) => handleToggleSystem("openLastScannedFolderOnLaunch", e.target.checked)}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Restore last cached results</p>
+                          <p className="text-xs opacity-50">Skip scanning and load your last scan from cache on startup</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.restoreLastCacheOnLaunch !== false}
+                          onChange={(e) => handleToggleSystem("restoreLastCacheOnLaunch", e.target.checked)}
+                          disabled={localSettings.system?.openLastScannedFolderOnLaunch === false}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
                           <p className="font-bold">Launch at Startup</p>
                           <p className="text-xs opacity-50">Automatically start Rempo when Windows begins</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={!!localSettings.system?.launchAtStartup}
+                          onChange={(e) => handleToggleSystem("launchAtStartup", e.target.checked)}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
                           <p className="font-bold">Hardware Acceleration</p>
                           <p className="text-xs opacity-50">Use GPU for smoother UI rendering (requires restart)</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.hardwareAcceleration !== false}
+                          onChange={(e) => handleToggleSystem("hardwareAcceleration", e.target.checked)}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
                         <div>
                           <p className="font-bold">Minimize to Tray</p>
                           <p className="text-xs opacity-50">Keep the app running in the system tray when closed</p>
                         </div>
-                        <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.system?.minimizeToTray !== false}
+                          onChange={(e) => handleToggleSystem("minimizeToTray", e.target.checked)}
+                        />
                       </div>
                     </div>
                   </section>
@@ -259,7 +425,140 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
                           <p className="text-xs opacity-50">C:\Users\Developer\AppData\Roaming\Rempo\db</p>
                         </div>
                       </div>
-                      <button className="btn btn-ghost btn-sm rounded-lg border border-base-content/10">Change</button>
+                      {/* <button className="btn btn-ghost btn-sm rounded-lg border border-base-content/10">Change</button> */}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearScanCache}
+                      >
+                        Clear Scan Cache
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearAiSummaries}
+                      >
+                        Clear AI Summaries
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost rounded-xl border border-base-content/10"
+                        onClick={handleClearActivities}
+                      >
+                        Clear Activity Log
+                      </button>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Git Terminal</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold">Font Size</p>
+                            <p className="text-xs opacity-50">Affects the embedded Git terminal (Ctrl+K)</p>
+                          </div>
+                          <input
+                            type="number"
+                            min={10}
+                            max={22}
+                            className="input input-bordered w-24 bg-base-100/40 border-base-content/10 rounded-xl"
+                            value={Number(localSettings.terminal?.fontSize ?? 13)}
+                            onChange={(e) => handleSetTerminal("fontSize", Number(e.target.value || 13))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Cursor Blink</p>
+                          <p className="text-xs opacity-50">Blinking cursor in the Git terminal</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={localSettings.terminal?.cursorBlink !== false}
+                          onChange={(e) => handleSetTerminal("cursorBlink", e.target.checked)}
+                        />
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <p className="font-bold mb-2">Terminal Theme</p>
+                        <div className="join w-full">
+                          <button
+                            type="button"
+                            className={`btn join-item flex-1 ${localSettings.terminal?.theme !== "light" ? "btn-primary" : "btn-ghost"}`}
+                            onClick={() => handleSetTerminal("theme", "dark")}
+                          >
+                            Dark
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn join-item flex-1 ${localSettings.terminal?.theme === "light" ? "btn-primary" : "btn-ghost"}`}
+                            onClick={() => handleSetTerminal("theme", "light")}
+                          >
+                            Light
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h4 className="text-sm font-bold opacity-40 uppercase tracking-widest mb-4">Scan Defaults</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold">Max Depth</p>
+                            <p className="text-xs opacity-50">How deep Rempo searches for repos (higher = slower)</p>
+                          </div>
+                          <input
+                            type="number"
+                            min={1}
+                            max={25}
+                            className="input input-bordered w-24 bg-base-100/40 border-base-content/10 rounded-xl"
+                            value={Number(localSettings.scan?.maxDepth ?? 6)}
+                            onChange={(e) => handleSetScan("maxDepth", Number(e.target.value || 6))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <div>
+                          <p className="font-bold">Include Hidden Folders</p>
+                          <p className="text-xs opacity-50">Scan dot-folders and hidden directories</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary"
+                          checked={!!localSettings.scan?.includeHidden}
+                          onChange={(e) => handleSetScan("includeHidden", e.target.checked)}
+                        />
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                        <p className="font-bold mb-2">Extra Ignore Patterns</p>
+                        <p className="text-xs opacity-50 mb-3">One pattern per line. Example: node_modules, dist, .next</p>
+                        <textarea
+                          className="textarea textarea-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl"
+                          rows={4}
+                          value={(localSettings.scan?.extraIgnorePatterns || []).join("\n")}
+                          onChange={(e) =>
+                            handleSetScan(
+                              "extraIgnorePatterns",
+                              (e.target.value || "")
+                                .split(/\r?\n/)
+                                .map((s) => s.trim())
+                                .filter(Boolean)
+                            )
+                          }
+                        />
+                      </div>
                     </div>
                   </section>
 
@@ -276,7 +575,7 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange }) 
             {/* Footer */}
             <div className="p-6 border-t border-base-content/5 flex justify-end gap-3 bg-base-200/30">
               <button className="btn btn-ghost rounded-xl px-6 font-bold" onClick={onClose}>Cancel</button>
-              <button className="btn btn-primary rounded-xl px-8 font-bold shadow-lg shadow-primary/20" onClick={onClose}>Save Changes</button>
+              <button className="btn btn-primary rounded-xl px-8 font-bold shadow-lg shadow-primary/20" onClick={handleSave}>Save Changes</button>
             </div>
           </div>
         </div>

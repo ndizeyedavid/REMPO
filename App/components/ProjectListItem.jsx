@@ -6,7 +6,7 @@ export default function ProjectListItem({ project, handleProjectClick }) {
     <div className="bg-base-300/30 p-3 rounded-xl border border-base-content/5 hover:border-primary/30 transition-all group flex items-center">
       {/* Icon */}
       <div className="flex gap-1.5 items-center">
-        <div className="p-2.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors shrink-0">
+        <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
           <Folder className="size-5" />
         </div>
 

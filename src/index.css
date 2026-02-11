@@ -4,6 +4,24 @@
   /* dark --prefersdark; */
 }
 
+/* Custom Scrollbar Styles */
+@layer base {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, currentColor 10%, transparent);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklch, currentColor 20%, transparent);
+  }
+}
+
 @plugin "daisyui/theme" {
   name: "synthwave";
   default: false;
