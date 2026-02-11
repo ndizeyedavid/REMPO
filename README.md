@@ -7,7 +7,11 @@
 [![Electron](https://img.shields.io/badge/built%20with-Electron-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/built%20with-React-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
 
-![REMPO Screenshot](public/favicon.ico)
+<div align="center">
+  
+  ![REMPO Screenshot](public/favicon.ico)
+  
+</div>
 
 ## Overview
 
