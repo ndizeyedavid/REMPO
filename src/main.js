@@ -9,12 +9,41 @@ const {
   Menu,
 } = require("electron");
 const path = require("node:path");
-const started = require("electron-squirrel-startup");
+let started = false;
+try {
+  started = require("electron-squirrel-startup");
+} catch (e) {
+  started = false;
+}
 const { exec, execFile } = require("child_process");
 const fs = require("fs");
-const Groq = require("groq-sdk");
-const simpleGit = require("simple-git");
-const ignore = require("ignore");
+let Groq = null;
+try {
+  Groq = require("groq-sdk");
+} catch (e) {
+  Groq = null;
+}
+
+let simpleGit = null;
+try {
+  simpleGit = require("simple-git");
+} catch (e) {
+  simpleGit = null;
+}
+let ignore = null;
+try {
+  ignore = require("ignore");
+} catch (e) {
+  ignore = null;
+}
+
+const createIgnore = () => {
+  if (ignore) return ignore();
+  return {
+    add: () => {},
+    test: () => ({ ignored: false, unignored: false }),
+  };
+};
 
 // Data Store Setup
 const STORE_PATH = path.join(app.getPath("userData"), "store.json");
@@ -153,6 +182,33 @@ const getIconPath = () => {
     } catch (e) {}
   }
   return null;
+};
+
+const runGit = async (cwd, args) => {
+  return await new Promise((resolve) => {
+    execFile(
+      "git",
+      args,
+      {
+        cwd,
+        timeout: 30000,
+        maxBuffer: 10 * 1024 * 1024,
+      },
+      (error, stdout, stderr) => {
+        resolve({
+          ok: !error,
+          stdout: (stdout || "").toString(),
+          stderr: (stderr || "").toString(),
+          exitCode: typeof error?.code === "number" ? error.code : 0,
+        });
+      }
+    );
+  });
+};
+
+const isGitRepo = async (cwd) => {
+  const res = await runGit(cwd, ["rev-parse", "--is-inside-work-tree"]);
+  return res.ok && res.stdout.trim() === "true";
 };
 
 const ensureTray = () => {
@@ -377,25 +433,58 @@ ipcMain.handle("generate-summary", async (event, { repoPath }) => {
       return { ok: false, error: "AI is disabled or API key is missing" };
     }
 
+    if (!Groq) {
+      return {
+        ok: false,
+        error:
+          "AI module is missing in this build (groq-sdk). Please reinstall/update REMPO or rebuild with dependencies.",
+      };
+    }
+
     if (store.aiResponses[repoPath]) {
       return { ok: true, summary: store.aiResponses[repoPath] };
     }
 
     const groq = new Groq({ apiKey: aiSettings.apiKey });
-    const git = simpleGit(repoPath);
 
-    // Get repo context for summary
-    const [status, log, branch] = await Promise.all([
-      git.status(),
-      git.log({ maxCount: 5 }),
-      git.revparse(["--abbrev-ref", "HEAD"]),
-    ]);
+    let fileList = "";
+    let recentCommits = "";
+    let branch = "";
 
-    const fileList = status.files
-      .slice(0, 10)
-      .map((f) => f.path)
-      .join(", ");
-    const recentCommits = log.all.map((c) => c.message).join("\n");
+    if (simpleGit) {
+      const git = simpleGit(repoPath);
+      const [status, log, br] = await Promise.all([
+        git.status(),
+        git.log({ maxCount: 5 }),
+        git.revparse(["--abbrev-ref", "HEAD"]),
+      ]);
+      branch = String(br || "").trim();
+      fileList = status.files
+        .slice(0, 10)
+        .map((f) => f.path)
+        .join(", ");
+      recentCommits = log.all.map((c) => c.message).join("\n");
+    } else {
+      const repoOk = await isGitRepo(repoPath);
+      if (!repoOk) return { ok: false, error: "Not a git repository" };
+
+      const [brRes, statusRes, logRes] = await Promise.all([
+        runGit(repoPath, ["rev-parse", "--abbrev-ref", "HEAD"]),
+        runGit(repoPath, ["status", "--porcelain"]),
+        runGit(repoPath, ["log", "-n", "5", "--pretty=%s"]),
+      ]);
+      branch = brRes.ok ? brRes.stdout.trim() : "";
+      fileList = statusRes.ok
+        ? statusRes.stdout
+            .split(/\r?\n/)
+            .filter(Boolean)
+            .slice(0, 10)
+            .map((line) => line.slice(3).trim())
+            .filter(Boolean)
+            .join(", ")
+        : "";
+      recentCommits = logRes.ok ? logRes.stdout.trim() : "";
+    }
 
     const prompt = `Summarize this git repository concisely (max 3 sentences).
 Project Name: ${path.basename(repoPath)}
@@ -469,7 +558,7 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
     };
 
     const loadGitignore = (currentDir) => {
-      const ig = ignore();
+      const ig = createIgnore();
       try {
         const giPath = path.join(currentDir, ".gitignore");
         if (!fs.existsSync(giPath)) return ig;
@@ -514,17 +603,41 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
       }
 
       if (files.includes(".git")) {
-        const git = simpleGit(currentDir);
-        const status = await git.status();
-        const branch = await git.revparse(["--abbrev-ref", "HEAD"]);
-        const log = await git.log({ maxCount: 1 });
+        let statusLabel = "Clean";
+        let branch = "";
+        let lastCommit = "No commits";
+
+        if (simpleGit) {
+          const git = simpleGit(currentDir);
+          const status = await git.status();
+          const br = await git.revparse(["--abbrev-ref", "HEAD"]);
+          const log = await git.log({ maxCount: 1 });
+          statusLabel = status.files.length > 0 ? "Uncommitted" : "Clean";
+          branch = String(br || "").trim();
+          lastCommit = log.latest?.message || "No commits";
+        } else {
+          const repoOk = await isGitRepo(currentDir);
+          if (!repoOk) return;
+
+          const [statusRes, brRes, logRes] = await Promise.all([
+            runGit(currentDir, ["status", "--porcelain"]),
+            runGit(currentDir, ["rev-parse", "--abbrev-ref", "HEAD"]),
+            runGit(currentDir, ["log", "-n", "1", "--pretty=%s"]),
+          ]);
+          const hasChanges = statusRes.ok && statusRes.stdout.trim().length > 0;
+          statusLabel = hasChanges ? "Uncommitted" : "Clean";
+          branch = brRes.ok ? brRes.stdout.trim() : "";
+          lastCommit = logRes.ok
+            ? logRes.stdout.trim() || "No commits"
+            : "No commits";
+        }
 
         repos.push({
           name: path.basename(currentDir),
           path: currentDir,
-          status: status.files.length > 0 ? "Uncommitted" : "Clean",
-          branch: branch,
-          lastCommit: log.latest?.message || "No commits",
+          status: statusLabel,
+          branch,
+          lastCommit,
           summary: "Repository found on disk.", // Placeholder for AI summary later
         });
 
@@ -551,7 +664,7 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
       }
     };
 
-    const extraIg = ignore();
+    const extraIg = createIgnore();
     try {
       extraIg.add(
         extraIgnorePatterns
@@ -582,28 +695,75 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
 
 ipcMain.handle("get-repo-details", async (event, repoPath) => {
   try {
-    const git = simpleGit(repoPath);
+    if (simpleGit) {
+      const git = simpleGit(repoPath);
 
-    // Get recent commits
-    const log = await git.log({ maxCount: 10 });
-    const commits = log.all.map((c) => ({
-      id: c.hash.substring(0, 7),
-      message: c.message,
-      time: c.date,
-      author: c.author_name,
-    }));
+      const log = await git.log({ maxCount: 10 });
+      const commits = log.all.map((c) => ({
+        id: c.hash.substring(0, 7),
+        message: c.message,
+        time: c.date,
+        author: c.author_name,
+      }));
 
-    // Get changed files (working directory status)
-    const status = await git.status();
-    const files = status.files.map((f) => ({
-      name: f.path,
-      status:
-        f.index === "A" || f.working_dir === "A"
-          ? "added"
-          : f.index === "D" || f.working_dir === "D"
-            ? "deleted"
-            : "modified",
-    }));
+      const status = await git.status();
+      const files = status.files.map((f) => ({
+        name: f.path,
+        status:
+          f.index === "A" || f.working_dir === "A"
+            ? "added"
+            : f.index === "D" || f.working_dir === "D"
+              ? "deleted"
+              : "modified",
+      }));
+
+      return { commits, files };
+    }
+
+    const repoOk = await isGitRepo(repoPath);
+    if (!repoOk) return { commits: [], files: [] };
+
+    const [logRes, statusRes] = await Promise.all([
+      runGit(repoPath, [
+        "log",
+        "-n",
+        "10",
+        "--pretty=%h|%an|%ad|%s",
+        "--date=iso",
+      ]),
+      runGit(repoPath, ["status", "--porcelain"]),
+    ]);
+
+    const commits = logRes.ok
+      ? logRes.stdout
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .map((line) => {
+            const [id, author, time, ...rest] = line.split("|");
+            return {
+              id: (id || "").trim(),
+              author: (author || "").trim(),
+              time: (time || "").trim(),
+              message: rest.join("|").trim(),
+            };
+          })
+      : [];
+
+    const files = statusRes.ok
+      ? statusRes.stdout
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .map((line) => {
+            const code = line.slice(0, 2);
+            const name = line.slice(3).trim();
+            const status = code.includes("A")
+              ? "added"
+              : code.includes("D")
+                ? "deleted"
+                : "modified";
+            return { name, status };
+          })
+      : [];
 
     return { commits, files };
   } catch (error) {

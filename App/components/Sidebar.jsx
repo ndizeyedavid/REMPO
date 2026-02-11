@@ -1,4 +1,5 @@
 import { Folder, ScanLine, Settings, RefreshCcw, MoreVertical, Pin, Trash2, PinOff } from "lucide-react";
+import logoImage from "../../src/assets/logo.png";
 
 export default function Sidebar({
     watchedFolders = [],
@@ -27,7 +28,7 @@ export default function Sidebar({
         <aside className="flex h-screen w-80 flex-col border-r border-base-content/10 bg-base-300 text-base-content">
             <div className="">
                 <div className="flex items-center gap-3 px-5 py-4">
-                    <img src="../src/assets/logo.png" width="40" height="40" class="size-[40px]" />
+                    <img src={logoImage} width="40" height="40" className="size-[40px]" />
                     {/* <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-content">
                         <Folder className="size-5" />
                     </div> */}
