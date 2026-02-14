@@ -426,26 +426,16 @@ ipcMain.handle("window-is-maximized", (event) => {
   return !!win?.isMaximized();
 });
 
-ipcMain.handle("generate-summary", async (event, { repoPath }) => {
+ipcMain.handle("generate-summary", async (_event, { repoPath }) => {
   try {
     const aiSettings = store.settings?.ai;
-    if (!aiSettings?.enabled || !aiSettings?.apiKey) {
-      return { ok: false, error: "AI is disabled or API key is missing" };
-    }
-
-    if (!Groq) {
-      return {
-        ok: false,
-        error:
-          "AI module is missing in this build (groq-sdk). Please reinstall/update REMPO or rebuild with dependencies.",
-      };
+    if (!aiSettings?.enabled) {
+      return { ok: false, error: "AI is disabled" };
     }
 
     if (store.aiResponses[repoPath]) {
       return { ok: true, summary: store.aiResponses[repoPath] };
     }
-
-    const groq = new Groq({ apiKey: aiSettings.apiKey });
 
     let fileList = "";
     let recentCommits = "";
@@ -495,15 +485,34 @@ ${recentCommits}
 
 Focus on the current state and purpose of the project.`;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.5,
-      max_tokens: 150,
+    const proxyBase =
+      (process.env.REMPO_AI_PROXY_URL &&
+        String(process.env.REMPO_AI_PROXY_URL)) ||
+      "http://localhost:3000";
+    const proxyUrl = `${proxyBase.replace(/\/+$/, "")}/api/ai/summary`;
+
+    const res = await fetch(proxyUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-rempo-client": "desktop",
+      },
+      body: JSON.stringify({
+        prompt,
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.5,
+        max_tokens: 150,
+      }),
     });
 
-    const summary =
-      chatCompletion.choices[0]?.message?.content || "No summary generated.";
+    const payload = await res.json().catch(() => null);
+    if (!res.ok || !payload?.ok) {
+      const details =
+        payload?.error || payload?.details || `HTTP ${res.status}`;
+      return { ok: false, error: `AI proxy failed: ${details}` };
+    }
+
+    const summary = payload?.summary || "No summary generated.";
 
     // Cache response
     store.aiResponses[repoPath] = summary;

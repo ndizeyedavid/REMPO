@@ -227,7 +227,7 @@ export default function App() {
             }
 
             // Auto-summarize first 8 repos if enabled
-            if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan && settings.ai?.apiKey) {
+            if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan) {
                 const first8 = repos.slice(0, 8);
                 first8.forEach(repo => {
                     if (!aiResponses[repo.path]) {
@@ -426,7 +426,7 @@ export default function App() {
                                 aiSettings={settings.ai}
                                 aiResponses={aiResponses}
                                 onTriggerSummary={(repoPath) => {
-                                    if (settings.ai?.enabled && settings.ai?.apiKey && !aiResponses[repoPath]) {
+                                    if (settings.ai?.enabled && !aiResponses[repoPath]) {
                                         window.electronAPI.generateSummary({ repoPath })
                                             .then(res => {
                                                 if (res.ok) {

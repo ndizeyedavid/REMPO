@@ -17,7 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scanning Feedback UI**
   - Live "currently scanning" folder path on the scanning screen
   - Recently scanned folders list to reassure users that scanning is active
-
+- **No AI API keys required**
+  - AI integration is done for you out of the box
+  - Still No Login required
+  - Llama 3 is backed with the system
 - **Website Updates**
   - New Changelog page with REMPO branding
   - New Showcase page with screenshot gallery and lightbox
