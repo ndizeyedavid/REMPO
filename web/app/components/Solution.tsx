@@ -107,7 +107,7 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
 
 export default function Solutions() {
   return (
-    <section className="pt-20 pb-8" id="features">
+    <section className="pt-20 pb-8" id="solutions">
       <div className="mx-6 max-w-[1120px] pt-2 pb-16 max-[300px]:mx-4 min-[1150px]:mx-auto">
         <div className="flex flex-col-reverse gap-6 md:grid md:grid-cols-3">
           {/* Left column */}

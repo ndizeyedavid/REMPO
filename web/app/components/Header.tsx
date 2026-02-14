@@ -33,6 +33,8 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +84,26 @@ export default function Header() {
   const mobileItemVariants = {
     closed: { opacity: 0, x: 20 },
     open: { opacity: 1, x: 0 },
+  };
+
+  const startDownload = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      const res = await fetch("/api/download", { method: "POST" });
+      const data = (await res.json()) as { downloadUrl?: string };
+      const url =
+        data?.downloadUrl ||
+        "https://github.com/ndizeyedavid/REMPO/releases/latest";
+      window.location.href = url;
+    } catch {
+      window.location.href =
+        "https://github.com/ndizeyedavid/REMPO/releases/latest";
+    } finally {
+      setIsDownloading(false);
+      setIsDownloadModalOpen(false);
+    }
   };
 
   return (
@@ -178,14 +200,14 @@ export default function Header() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Link
-                  prefetch={false}
-                  href="/signup"
+                <button
+                  type="button"
+                  onClick={() => setIsDownloadModalOpen(true)}
                   className="bg-foreground text-background hover:bg-foreground/90 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200"
                 >
                   <span>Download</span>
                   <Download className="h-4 w-4" />
-                </Link>
+                </button>
               </motion.div>
             </motion.div>
 
@@ -250,15 +272,82 @@ export default function Header() {
                   >
                     Github
                   </Link>
-                  <Link
-                    prefetch={false}
-                    href="/signup"
+                  <button
+                    type="button"
                     className="bg-foreground text-background hover:bg-foreground/90 block w-full rounded-lg py-3 text-center font-medium transition-all duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsDownloadModalOpen(true);
+                    }}
                   >
                     Download
-                  </Link>
+                  </button>
                 </motion.div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isDownloadModalOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() =>
+                isDownloading ? null : setIsDownloadModalOpen(false)
+              }
+            />
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            >
+              <div
+                className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#050608] shadow-[0_24px_90px_rgba(0,0,0,0.85)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="border-b border-white/10 p-5">
+                  <p className="text-xs font-mono uppercase tracking-[0.3em] text-zinc-500">
+                    Download
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-zinc-50">
+                    A quick note from the developer
+                  </h3>
+                  <p className="mt-2 text-sm text-zinc-300">
+                    Thanks for checking out REMPO. If it helps you remember what
+                    you were building, consider starring the repo on GitHub.
+                  </p>
+                  <p className="mt-3 text-xs text-zinc-500">
+                    To improve releases, this download will send basic request
+                    metadata (IP from request headers, browser user-agent, and
+                    referrer) to the developer.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 p-5">
+                  <button
+                    type="button"
+                    disabled={isDownloading}
+                    onClick={() => setIsDownloadModalOpen(false)}
+                    className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={startDownload}
+                    disabled={isDownloading}
+                    className="rounded-lg bg-[#0076db] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a82ea] disabled:opacity-70"
+                  >
+                    {isDownloading ? "Preparing..." : "Continue download"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>

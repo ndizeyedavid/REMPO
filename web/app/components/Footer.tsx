@@ -18,9 +18,9 @@ import {
 const data = () => ({
   navigation: {
     product: [
-      { name: "Features", href: "#features" },
-      { name: "Solution", href: "#pricing" },
-      { name: "Showcase", href: "#integrations" },
+      { name: "Features", href: "/#features" },
+      { name: "Solution", href: "/#solutions" },
+      { name: "Showcase", href: "/#showcase" },
       { name: "Changelog", href: "/changelog" },
     ],
     moi: [

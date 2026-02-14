@@ -62,7 +62,7 @@ export default function Features() {
   }, [progress]);
 
   return (
-    <div className={"p-8 md:p-12 relative"}>
+    <div className={"p-8 md:p-12 relative"} id="features">
       <div className="pointer-events-none absolute inset-x-0 -top-[30px] h-[68px] bg-gradient-to-b from-[#121212] via-[#121212]/70 to-transparent" />
       <div className="mx-auto w-full max-w-7xl">
         <div className="relative mx-auto mb-12 max-w-2xl sm:text-center">

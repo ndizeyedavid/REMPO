@@ -43,7 +43,7 @@ export default function Showcase() {
 
   return (
     <section
-      id="integrations"
+      id="showcase"
       className="relative z-0 mx-auto w-full max-w-6xl px-6 py-20 md:px-8 md:py-24"
     >
       <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
