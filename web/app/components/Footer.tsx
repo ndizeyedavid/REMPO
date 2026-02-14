@@ -19,38 +19,42 @@ const data = () => ({
   navigation: {
     product: [
       { name: "Features", href: "#features" },
-      { name: "Pricing", href: "#pricing" },
-      { name: "Integrations", href: "#integrations" },
-      { name: "Roadmap", href: "#roadmap" },
+      { name: "Solution", href: "#pricing" },
+      { name: "Showcase", href: "#integrations" },
+      { name: "Changelog", href: "/changelog" },
     ],
-    company: [
-      { name: "About", href: "/about" },
-      { name: "Blog", href: "/blog" },
-      { name: "Careers", href: "/careers" },
-      { name: "Contact", href: "/contact" },
+    moi: [
+      { name: "About", href: "http://davidndizeye.vercel.app" },
+      { name: "Blog", href: "https://davidndizeye.vercel.app/blog" },
+      // { name: "Careers", href: "/careers" },
+      { name: "Contact", href: "mailto:davidndizeye101@gmail.com" },
     ],
     resources: [
       { name: "Documentation", href: "/docs" },
-      { name: "API Reference", href: "/api" },
-      { name: "Community", href: "/community" },
-      { name: "Status", href: "/status" },
+      // { name: "API Reference", href: "/api" },
+      // { name: "Community", href: "/community" },
+      // { name: "Status", href: "/status" },
     ],
     legal: [
-      { name: "Privacy", href: "/privacy" },
-      { name: "Terms", href: "/terms" },
-      { name: "Cookie Policy", href: "/cookies" },
+      { name: "Privacy", href: "/privacy-policy" },
+      { name: "Terms", href: "/terms-of-service" },
+      // { name: "Cookie Policy", href: "/cookies" },
     ],
   },
   socialLinks: [
-    { icon: Twitter, label: "Twitter", href: "#" },
+    // { icon: Whatsapp, label: "Twitter", href: "#" },
+    {
+      icon: MessageCircle,
+      label: "Whatsapp",
+      href: "https://wa.me?phone=250796140857",
+    },
     { icon: Github, label: "GitHub", href: "#" },
-    { icon: MessageCircle, label: "Discord", href: "#" },
-    { icon: Linkedin, label: "LinkedIn", href: "#" },
+    // { icon: Linkedin, label: "LinkedIn", href: "#" },
   ],
   bottomLinks: [
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/cookies", label: "Cookie Policy" },
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/terms-of-service", label: "Terms of Service" },
+    // { href: "/cookies", label: "Cookie Policy" },
   ],
 });
 
@@ -85,14 +89,16 @@ export default function Footer() {
               <span className="text-xl font-semibold">REMPO</span>
             </Link>
             <p className="text-muted-foreground max-w-md">
-              Building innovative solutions for modern businesses. Fast,
-              reliable, and scalable.
+              Remember what you were building with a personal desktop
+              application that scans and help you know what the hell you've been
+              working on
             </p>
             <div className="flex items-center gap-2">
               <div className="flex gap-2">
                 {data().socialLinks.map(({ icon: Icon, label, href }) => (
                   <Button
                     key={label}
+                    title={label}
                     size="icon"
                     variant="outline"
                     asChild
@@ -108,7 +114,7 @@ export default function Footer() {
                 variant="outline"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="hover:bg-primary dark:hover:bg-primary !border-primary/30 !hover:border-primary cursor-pointer shadow-none transition-all duration-1000 hover:scale-110 hover:-rotate-12 hover:text-white hover:shadow-md"
+                className="hidden hover:bg-primary dark:hover:bg-primary !border-primary/30 !hover:border-primary cursor-pointer shadow-none transition-all duration-1000 hover:scale-110 hover:-rotate-12 hover:text-white hover:shadow-md"
               >
                 {theme === "dark" ? (
                   <Sun className="h-4 w-4" />
@@ -141,17 +147,17 @@ export default function Footer() {
                 </Button>
               </div>
               <p className="text-muted-foreground text-xs">
-                Get the latest updates, tutorials, and exclusive offers.
+                Get to know when we release new versions or anything cool.
               </p>
             </form>
             <h1 className="from-muted-foreground/15 bg-gradient-to-b bg-clip-text text-5xl font-extrabold text-transparent lg:text-7xl">
-              Developer
+              🎮💻🎮💻
             </h1>
           </div>
 
           {/* Navigation Links */}
           <div className="grid w-full grid-cols-2 items-start justify-between gap-8 px-5 lg:col-span-3">
-            {(["product", "company", "resources", "legal"] as const).map(
+            {(["product", "moi", "resources", "legal"] as const).map(
               (section) => (
                 <div key={section} className="w-full">
                   <h3 className="border-primary mb-4 -ml-5 border-l-2 pl-5 text-sm font-semibold tracking-wider uppercase">
@@ -179,7 +185,16 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="animate-rotate-3d via-primary h-px w-full bg-gradient-to-r from-transparent to-transparent" />
         <div className="text-muted-foreground container m-auto flex flex-col items-center justify-between gap-4 p-4 text-xs md:flex-row md:px-0 md:text-sm">
-          <p className="">&copy; {currentYear} REMPO | All rights reserved</p>
+          <p className="">
+            &copy; {currentYear} REMPO | A mesh with ❤️ by{" "}
+            <Link
+              href="https://davidndizeye.vercel.app"
+              target="_blank"
+              className="hover:underline"
+            >
+              David
+            </Link>
+          </p>
           <div className="flex items-center gap-4">
             {data().bottomLinks.map(({ href, label }) => (
               <Link key={href} href={href} className="hover:text-foreground">
