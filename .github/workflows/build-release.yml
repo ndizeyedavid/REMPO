@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.0.4). Leave empty to use package.json version'
+        description: "Version to release (e.g., 0.0.4). Leave empty to use package.json version"
         required: false
         type: string
   push:
     branches:
       - main
     paths:
-      - 'package.json'
-      - 'CHANGELOG.md'
+      - "package.json"
+      - "CHANGELOG.md"
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ permissions:
 jobs:
   build-and-release:
     runs-on: windows-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,8 +30,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Get version from package.json
         id: get_version
@@ -77,13 +77,14 @@ jobs:
         id: find_installer
         shell: pwsh
         run: |
-          $installer = Get-ChildItem -Path "out/make/squirrel.windows/x64" -Filter "*.exe" -Recurse | Select-Object -First 1
+          # NSIS maker outputs to out/make/nsis/<arch>/
+          $installer = Get-ChildItem -Path "out/make/nsis/x64" -Filter "*.exe" -Recurse | Select-Object -First 1
           if ($installer) {
             Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
             Write-Output "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
-            Write-Output "📦 Found installer: $($installer.Name)"
+            Write-Output "📦 Found NSIS installer: $($installer.Name)"
           } else {
-            # Try alternative paths
+            # Fallback: search all make directories
             $installer = Get-ChildItem -Path "out/make" -Filter "*.exe" -Recurse | Select-Object -First 1
             if ($installer) {
               Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
@@ -101,11 +102,11 @@ jobs:
         run: |
           $version = "${{ steps.get_version.outputs.version }}"
           $content = Get-Content CHANGELOG.md -Raw
-          
+
           # Find the section for this version
           $pattern = "## \[?$version\]?.*?(?=## \[|$)"
           $match = [regex]::Match($content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
-          
+
           if ($match.Success) {
             $changelogSection = $match.Value.Trim()
             # Save to file for release notes

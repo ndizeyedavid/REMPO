@@ -4,15 +4,17 @@ const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: "src/assets/favicon",
+    name: "REMPO",
+    executableName: "REMPO",
+    appVersion: "0.0.5",
+    buildVersion: "0.0.5",
   },
   rebuildConfig: {},
   makers: [
     {
-      name: "@electron-forge/maker-wix",
-      config: {
-        name: "REMPO",
-      },
+      name: "@electron-addons/electron-forge-maker-nsis",
+      platforms: ["win32"],
+      config: {},
     },
     {
       name: "@electron-forge/maker-zip",

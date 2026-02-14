@@ -2,7 +2,7 @@
 
 > **Re**member what you were building. A beautiful dashboard for your global git ecosystem.
 
-[![Version](https://img.shields.io/badge/version-0.0.4--beta-blue)](https://github.com/ndizeyedavid/REMPO/releases)
+[![Version](https://img.shields.io/badge/version-0.0.5--beta-blue)](https://github.com/ndizeyedavid/REMPO/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Electron](https://img.shields.io/badge/built%20with-Electron-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/built%20with-React-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
