@@ -8,10 +8,13 @@ import DashboardState from "./components/DashboardState"
 import SettingsModal from "./components/SettingsModal"
 import GitPalette from "./components/GitPalette"
 import FolderPicker from "./components/FolderPicker"
+import FullSystemScanModal from "./components/FullSystemScanModal"
 
 export default function App() {
     const [view, setView] = useState("welcome") // "welcome", "scanning", "dashboard"
     const [scanProgress, setScanProgress] = useState({ folders: 0, repos: 0 })
+    const [scanCurrentDir, setScanCurrentDir] = useState(null)
+    const [scanRecentDirs, setScanRecentDirs] = useState([])
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [theme, setTheme] = useState("light")
     const [scannedRepos, setScannedRepos] = useState([])
@@ -22,6 +25,7 @@ export default function App() {
     const [activities, setActivities] = useState([])
     const [isGitPaletteOpen, setIsGitPaletteOpen] = useState(false)
     const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false)
+    const [isFullSystemScanOpen, setIsFullSystemScanOpen] = useState(false)
     const [settings, setSettings] = useState({
         ai: {
             enabled: true,
@@ -45,6 +49,10 @@ export default function App() {
 
     const openFolderPicker = () => {
         setIsFolderPickerOpen(true)
+    }
+
+    const openFullSystemScan = () => {
+        setIsFullSystemScanOpen(true)
     }
 
     // Load initial data from store
@@ -162,10 +170,21 @@ export default function App() {
 
             setView("scanning")
             setScanProgress({ folders: 0, repos: 0 })
+            setScanCurrentDir(null)
+            setScanRecentDirs([])
 
             const disposeScanProgress = window.electronAPI?.onScanProgress
-                ? window.electronAPI.onScanProgress(({ folders, repos }) => {
+                ? window.electronAPI.onScanProgress((payload) => {
+                    const { folders, repos, currentDir } = payload || {};
                     setScanProgress({ folders: folders || 0, repos: repos || 0 });
+
+                    if (typeof currentDir === "string" && currentDir) {
+                        setScanCurrentDir(currentDir);
+                        setScanRecentDirs(prev => {
+                            const next = [currentDir, ...(prev || [])];
+                            return Array.from(new Set(next)).slice(0, 30);
+                        });
+                    }
                 })
                 : null;
 
@@ -200,6 +219,13 @@ export default function App() {
 
             setScannedRepos(repos);
 
+            const repoIssues = Array.isArray(repos)
+                ? repos.filter(r => r && typeof r.error === "string" && r.error.trim()).length
+                : 0;
+            if (repoIssues > 0) {
+                toast.error(`Scan completed with warnings: ${repoIssues} repo(s) couldn't be fully inspected`);
+            }
+
             // Auto-summarize first 8 repos if enabled
             if (settings.ai?.enabled && settings.ai?.autoSummarizeOnScan && settings.ai?.apiKey) {
                 const first8 = repos.slice(0, 8);
@@ -232,6 +258,68 @@ export default function App() {
             console.error("Failed to scan:", error);
             toast.error("Failed to scan selected folder");
             setView("welcome");
+        }
+    }
+
+    const handleFullSystemScan = async (drivePaths = []) => {
+        if (view === "scanning") return
+        if (!Array.isArray(drivePaths) || drivePaths.length === 0) return
+
+        try {
+            setIsFullSystemScanOpen(false)
+
+            setActiveFolderPath(drivePaths[0])
+            setView("scanning")
+            setScanProgress({ folders: 0, repos: 0 })
+            setScanCurrentDir(null)
+            setScanRecentDirs([])
+
+            const disposeScanProgress = window.electronAPI?.onScanProgress
+                ? window.electronAPI.onScanProgress((payload) => {
+                    const { folders, repos, currentDir } = payload || {};
+                    setScanProgress({ folders: folders || 0, repos: repos || 0 });
+
+                    if (typeof currentDir === "string" && currentDir) {
+                        setScanCurrentDir(currentDir);
+                        setScanRecentDirs(prev => {
+                            const next = [currentDir, ...(prev || [])];
+                            return Array.from(new Set(next)).slice(0, 30);
+                        });
+                    }
+                })
+                : null;
+
+            const scanOptions = {
+                ...(settings.scan || {}),
+                excludeSystemDirs: true,
+                includeHidden: false,
+            }
+
+            const repos = await window.electronAPI.scanRepos(drivePaths, scanOptions)
+
+            try {
+                disposeScanProgress?.();
+            } catch (e) { }
+
+            await logActivity({
+                project: "Full system scan",
+                action: `Scanned ${drivePaths.length} drive(s) for projects`,
+                type: 'scan'
+            })
+
+            setScannedRepos(repos)
+
+            const repoIssues = Array.isArray(repos)
+                ? repos.filter(r => r && typeof r.error === "string" && r.error.trim()).length
+                : 0;
+            if (repoIssues > 0) {
+                toast.error(`Scan completed with warnings: ${repoIssues} repo(s) couldn't be fully inspected`)
+            }
+            setTimeout(() => setView("dashboard"), 500)
+        } catch (error) {
+            console.error("Failed full system scan:", error)
+            toast.error("Full system scan failed")
+            setView("welcome")
         }
     }
 
@@ -314,7 +402,10 @@ export default function App() {
                     <div className="flex h-full items-center justify-center">
                         {view === "welcome" && (
                             <div className="px-6 w-full flex justify-center">
-                                <WelcomeState onStartScan={openFolderPicker} />
+                                <WelcomeState
+                                    onFullSystemScan={openFullSystemScan}
+                                    onCustomScan={openFolderPicker}
+                                />
                             </div>
                         )}
                         {view === "scanning" && (
@@ -322,6 +413,8 @@ export default function App() {
                                 <ScanningState
                                     folders={scanProgress.folders}
                                     repos={scanProgress.repos}
+                                    currentDir={scanCurrentDir}
+                                    recentDirs={scanRecentDirs}
                                 />
                             </div>
                         )}
@@ -376,6 +469,12 @@ export default function App() {
                 }}
                 initialPath={activeFolderPath}
                 recentFolders={watchedFolders}
+            />
+
+            <FullSystemScanModal
+                isOpen={isFullSystemScanOpen}
+                onClose={() => setIsFullSystemScanOpen(false)}
+                onConfirm={(drivePaths) => handleFullSystemScan(drivePaths)}
             />
         </div>
     )

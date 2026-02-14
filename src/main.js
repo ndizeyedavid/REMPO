@@ -533,9 +533,34 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
   const extraIgnorePatterns = Array.isArray(scanSettings.extraIgnorePatterns)
     ? scanSettings.extraIgnorePatterns
     : [];
+  const excludeSystemDirs = !!scanSettings.excludeSystemDirs;
+
+  const shouldSkipDir = (absoluteDirPath) => {
+    if (!excludeSystemDirs) return false;
+    if (process.platform !== "win32") return false;
+    const p = String(absoluteDirPath || "").toLowerCase();
+    if (!p) return false;
+
+    const systemMarkers = [
+      "\\windows",
+      "\\program files",
+      "\\program files (x86)",
+      "\\programdata",
+      "\\$recycle.bin",
+      "\\system volume information",
+      "\\recovery",
+      "\\perflogs",
+    ];
+    if (systemMarkers.some((m) => p.includes(m))) return true;
+
+    // Skip common user-local caches
+    if (p.includes("\\users\\") && p.includes("\\appdata\\")) return true;
+
+    return false;
+  };
 
   let lastProgressSentAt = 0;
-  const sendProgress = (force = false) => {
+  const sendProgress = (force = false, currentDir = null) => {
     const now = Date.now();
     if (!force && now - lastProgressSentAt < 60) return;
     lastProgressSentAt = now;
@@ -543,6 +568,7 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
       event.sender.send("scan-progress", {
         folders: foldersScanned,
         repos: reposFound,
+        currentDir,
       });
     } catch (e) {}
   };
@@ -586,8 +612,9 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
 
     const scanWithIgnore = async (currentDir, matcherStack, depth) => {
       if (depth > maxDepth) return;
+      if (shouldSkipDir(currentDir)) return;
       foldersScanned += 1;
-      sendProgress();
+      sendProgress(false, currentDir);
 
       const currentMatcher = {
         baseDir: currentDir,
@@ -606,23 +633,19 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
         let statusLabel = "Clean";
         let branch = "";
         let lastCommit = "No commits";
+        let gitError = null;
 
-        if (simpleGit) {
-          const git = simpleGit(currentDir);
-          const status = await git.status();
-          const br = await git.revparse(["--abbrev-ref", "HEAD"]);
-          const log = await git.log({ maxCount: 1 });
-          statusLabel = status.files.length > 0 ? "Uncommitted" : "Clean";
-          branch = String(br || "").trim();
-          lastCommit = log.latest?.message || "No commits";
-        } else {
+        const fillFromRunGit = async () => {
           const repoOk = await isGitRepo(currentDir);
-          if (!repoOk) return;
+          if (!repoOk) return false;
+
+          const run = (args) =>
+            runGit(currentDir, ["-c", "safe.directory=*", ...args]);
 
           const [statusRes, brRes, logRes] = await Promise.all([
-            runGit(currentDir, ["status", "--porcelain"]),
-            runGit(currentDir, ["rev-parse", "--abbrev-ref", "HEAD"]),
-            runGit(currentDir, ["log", "-n", "1", "--pretty=%s"]),
+            run(["status", "--porcelain"]),
+            run(["rev-parse", "--abbrev-ref", "HEAD"]),
+            run(["log", "-n", "1", "--pretty=%s"]),
           ]);
           const hasChanges = statusRes.ok && statusRes.stdout.trim().length > 0;
           statusLabel = hasChanges ? "Uncommitted" : "Clean";
@@ -630,6 +653,42 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
           lastCommit = logRes.ok
             ? logRes.stdout.trim() || "No commits"
             : "No commits";
+
+          if (!statusRes.ok || !brRes.ok || !logRes.ok) {
+            const msg = [statusRes, brRes, logRes]
+              .filter((r) => r && r.ok === false)
+              .map((r) => r.error)
+              .filter(Boolean)
+              .join(" | ");
+            if (msg) gitError = msg;
+          }
+
+          return true;
+        };
+
+        if (simpleGit) {
+          try {
+            const git = simpleGit(currentDir);
+            const status = await git.status();
+            const br = await git.revparse(["--abbrev-ref", "HEAD"]);
+            const log = await git.log({ maxCount: 1 });
+            statusLabel = status.files.length > 0 ? "Uncommitted" : "Clean";
+            branch = String(br || "").trim();
+            lastCommit = log.latest?.message || "No commits";
+          } catch (e) {
+            gitError = e?.message || String(e);
+            try {
+              await fillFromRunGit();
+            } catch (e2) {
+              gitError = gitError || e2?.message || String(e2);
+            }
+          }
+        } else {
+          try {
+            await fillFromRunGit();
+          } catch (e) {
+            gitError = e?.message || String(e);
+          }
         }
 
         repos.push({
@@ -639,10 +698,11 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
           branch,
           lastCommit,
           summary: "Repository found on disk.", // Placeholder for AI summary later
+          error: gitError,
         });
 
         reposFound += 1;
-        sendProgress(true);
+        sendProgress(true, currentDir);
         return; // Stop recursion if .git found
       }
 
@@ -658,6 +718,8 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
           continue;
         }
         if (!stat.isDirectory()) continue;
+
+        if (shouldSkipDir(fullPath)) continue;
 
         if (isIgnoredByStack(fullPath, true, nextStack)) continue;
         await scanWithIgnore(fullPath, nextStack, depth + 1);
@@ -682,10 +744,13 @@ ipcMain.handle("scan-repos", async (event, rootPath, options) => {
 
   try {
     // Initial progress ping so UI doesn't stick at 0 while first disk read happens
-    sendProgress(true);
-    await scan(rootPath);
+    sendProgress(true, Array.isArray(rootPath) ? null : rootPath);
+    const roots = Array.isArray(rootPath) ? rootPath : [rootPath];
+    for (const r of roots) {
+      await scan(r);
+    }
     // Final progress ping
-    sendProgress(true);
+    sendProgress(true, null);
     return repos;
   } catch (error) {
     console.error("Scan error:", error);

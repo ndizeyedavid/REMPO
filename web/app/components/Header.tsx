@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import {
   Menu,
@@ -35,6 +35,7 @@ export default function Header() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +44,50 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isDownloadModalOpen) return;
+    setCountdown(3);
+  }, [isDownloadModalOpen]);
+
+  useEffect(() => {
+    if (!isDownloadModalOpen) return;
+    if (isDownloading) return;
+
+    if (countdown <= 0) {
+      startDownload();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setCountdown((c) => c - 1);
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [countdown, isDownloadModalOpen, isDownloading]);
+
+  const confettiPieces = useMemo(() => {
+    const colors = ["#0076db", "#80bfff", "#ffffff", "#22c55e", "#a855f7"];
+
+    return Array.from({ length: 26 }).map((_, i) => {
+      const left = Math.round(Math.random() * 100);
+      const delay = Math.random() * 0.6;
+      const duration = 1.6 + Math.random() * 1.4;
+      const size = 6 + Math.round(Math.random() * 8);
+      const rotate = Math.round(Math.random() * 360);
+      const color = colors[i % colors.length];
+
+      return {
+        left,
+        delay,
+        duration,
+        size,
+        rotate,
+        color,
+        key: `${i}-${left}`,
+      };
+    });
+  }, [isDownloadModalOpen]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -316,21 +361,39 @@ export default function Header() {
                   <p className="text-xs font-mono uppercase tracking-[0.3em] text-zinc-500">
                     Download
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-zinc-50">
-                    A quick note from the developer
-                  </h3>
-                  <p className="mt-2 text-sm text-zinc-300">
-                    Thanks for checking out REMPO. If it helps you remember what
-                    you were building, consider starring the repo on GitHub.
-                  </p>
-                  <p className="mt-3 text-xs text-zinc-500">
-                    To improve releases, this download will send basic request
-                    metadata (IP from request headers, browser user-agent, and
-                    referrer) to the developer.
-                  </p>
+                  <div className="mt-2 flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-zinc-50">
+                        Thank you for supporting REMPO
+                      </h3>
+                      <p className="mt-2 text-sm text-zinc-300">
+                        Your download really helps. I hope REMPO saves you time
+                        and keeps your projects organized.
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-[#0076db]/30 bg-[#0076db]/10 px-2 py-2 text-right">
+                      <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#80bfff]">
+                        Starting in
+                      </p>
+                      <p className="mt-0.5 text-2xl font-semibold text-zinc-50">
+                        {isDownloading ? "…" : countdown}
+                        <span className="ml-1 text-sm font-normal text-zinc-300">
+                          s
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3">
+                    <p className="text-xs text-zinc-400">
+                      I am continously adding more updates and making this
+                      application even way more potentious and useful, we'll let
+                      you know if there is something new!
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 p-5">
+                <div className="items-center justify-end gap-2 p-5 hidden">
                   <button
                     type="button"
                     disabled={isDownloading}
@@ -345,14 +408,48 @@ export default function Header() {
                     disabled={isDownloading}
                     className="rounded-lg bg-[#0076db] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a82ea] disabled:opacity-70"
                   >
-                    {isDownloading ? "Preparing..." : "Continue download"}
+                    {isDownloading ? "Preparing..." : "Download now"}
                   </button>
+                </div>
+
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                  {confettiPieces.map((p) => (
+                    <span
+                      key={p.key}
+                      className="absolute -top-6 opacity-0"
+                      style={{
+                        left: `${p.left}%`,
+                        width: `${p.size}px`,
+                        height: `${Math.max(6, Math.round(p.size * 0.6))}px`,
+                        backgroundColor: p.color,
+                        borderRadius: "2px",
+                        transform: `rotate(${p.rotate}deg)`,
+                        animation: `confetti-fall ${p.duration}s ease-out ${p.delay}s forwards`,
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      <style jsx>{`
+        @keyframes confetti-fall {
+          0% {
+            transform: translateY(-10px) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(420px) rotate(360deg);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </>
   );
 }

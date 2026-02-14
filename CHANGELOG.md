@@ -5,6 +5,41 @@ All notable changes to REMPO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5-beta] - 2026-02-14
+
+### Added
+
+- **Full System Scan Flow**
+  - Confirmation modal before starting a full system scan
+  - Drive selection (scan selected drives or select all)
+  - System folder exclusions for Windows to avoid scanning OS and cache directories
+
+- **Scanning Feedback UI**
+  - Live "currently scanning" folder path on the scanning screen
+  - Recently scanned folders list to reassure users that scanning is active
+
+- **Website Updates**
+  - New Changelog page with REMPO branding
+  - New Showcase page with screenshot gallery and lightbox
+  - Improved landing page styling to match REMPO blue branding
+
+### Changed
+
+- **Scan Progress Events**
+  - Progress IPC now includes the current folder being scanned
+
+- **Website Download Flow**
+  - Header download links replaced with a modal-based download experience
+
+### Fixed
+
+- **Scan Reliability**
+  - Scanning no longer aborts when encountering problematic repositories (e.g. Git safe.directory ownership warnings or corrupted index)
+  - Repositories that cannot be fully inspected are still returned with an error field, and the UI reports scan warnings
+
+- **UI**
+  - Fixed React attribute issues in updated Welcome screen components
+
 ## [0.0.4-beta] - 2026-02-11
 
 ### Added

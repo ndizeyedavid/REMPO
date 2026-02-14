@@ -1,7 +1,13 @@
 import React from "react";
 import { Folder, Loader2, Search } from "lucide-react";
 
-export default function ScanningState({ folders, repos, totalFolders = 114 }) {
+export default function ScanningState({
+  folders,
+  repos,
+  currentDir,
+  recentDirs,
+  totalFolders = 114,
+}) {
   const progress = Math.min((folders / totalFolders) * 100, 100);
 
   return (
@@ -42,6 +48,29 @@ export default function ScanningState({ folders, repos, totalFolders = 114 }) {
           className="h-full bg-primary transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-base-content/10 bg-base-100/50 p-4 text-left">
+        <div className="text-xs font-bold opacity-40 uppercase tracking-widest">
+          Currently scanning
+        </div>
+        <div className="mt-2 font-mono text-xs break-all opacity-80">
+          {currentDir || "Preparing..."}
+        </div>
+
+        <div className="mt-4 text-xs font-bold opacity-40 uppercase tracking-widest">
+          Recent folders
+        </div>
+        <div className="mt-2 max-h-28 overflow-y-auto custom-scrollbar space-y-1">
+          {(Array.isArray(recentDirs) ? recentDirs : []).slice(0, 8).map((d) => (
+            <div key={d} className="font-mono text-[11px] opacity-60 break-all">
+              {d}
+            </div>
+          ))}
+          {(Array.isArray(recentDirs) ? recentDirs : []).length === 0 && (
+            <div className="text-[11px] opacity-50">No paths yet...</div>
+          )}
+        </div>
       </div>
     </div>
   );
