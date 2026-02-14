@@ -71,6 +71,8 @@ jobs:
         run: npm ci
 
       - name: Build application
+        env:
+          ELECTRON_BUILDER_DISABLE_PUBLISH: true
         run: npm run make
 
       - name: Find installer
