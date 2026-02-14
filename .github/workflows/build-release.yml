@@ -73,6 +73,7 @@ jobs:
       - name: Build application
         env:
           ELECTRON_BUILDER_DISABLE_PUBLISH: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run make
 
       - name: Find installer
