@@ -169,11 +169,18 @@ let tray = null;
 let mainWindowRef = null;
 
 const getIconPath = () => {
+  // In production, resources are in different locations depending on packaging
   const candidates = [
-    // Packaged/built path (vite main build)
-    path.join(__dirname, "..", "assets", "favicon.ico"),
-    // Dev source path
+    // Production: resourcesPath is where assets are typically placed
+    path.join(process.resourcesPath, "favicon.ico"),
+    // Production: relative to the executable
+    path.join(process.cwd(), "resources", "favicon.ico"),
+    // Development: relative to .vite/build/main.js
     path.join(__dirname, "..", "..", "src", "assets", "favicon.ico"),
+    // Development: relative to project root
+    path.join(__dirname, "..", "renderer", "assets", "favicon.ico"),
+    // Absolute fallback
+    path.resolve("src/assets/favicon.ico"),
   ];
 
   for (const p of candidates) {
@@ -225,7 +232,7 @@ const ensureTray = () => {
     const iconPath = getIconPath();
     if (!iconPath) return null;
     tray = new Tray(iconPath);
-    tray.setToolTip("Rempo");
+    tray.setToolTip("REMPO");
 
     const contextMenu = Menu.buildFromTemplate([
       {

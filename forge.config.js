@@ -8,6 +8,7 @@ module.exports = {
     executableName: "REMPO",
     appVersion: "0.0.5",
     buildVersion: "0.0.5",
+    icon: "src/assets/favicon.ico",
   },
   rebuildConfig: {},
   makers: [
