@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 
-const siteUrl = "https://rempo.vercel.app";
+const siteUrl = "https://rempoapp.vercel.app";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,6 +87,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
