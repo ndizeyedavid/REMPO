@@ -2,9 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
-import { Menu, X, ArrowRight, Zap, Search, Download } from "lucide-react";
+import {
+  Menu,
+  X,
+  ArrowRight,
+  Zap,
+  Search,
+  Download,
+  Github,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { RainbowButton } from "@/components/ui/rainbow-button";
 
 interface NavItem {
   name: string;
@@ -12,12 +21,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "Home", href: "#" },
-  { name: "Features", href: "#" },
-  { name: "Solutions", href: "#" },
-  { name: "Technology", href: "#" },
-  { name: "Screenshots", href: "#" },
-  { name: "Feedback", href: "#" },
+  { name: "Home", href: "/#" },
+  { name: "Features", href: "/#features" },
+  { name: "Solutions", href: "/#solution" },
+  { name: "Technology", href: "/#tech" },
+  { name: "Showcase", href: "/#showcase" },
+  { name: "Changelog", href: "/changelog" },
 ];
 
 export default function Header() {
@@ -159,10 +168,10 @@ export default function Header() {
             >
               <Link
                 prefetch={false}
-                href="/login"
+                href="https://github.com/ndizeyedavid/REMPO"
                 className="text-foreground/80 hover:text-foreground px-4 py-2 text-sm font-medium transition-colors duration-200"
               >
-                ChangeLog
+                <Github />
               </Link>
 
               <motion.div
@@ -235,11 +244,11 @@ export default function Header() {
                 >
                   <Link
                     prefetch={false}
-                    href="/login"
+                    href="https://github.com/ndizeyedavid/REMPO"
                     className="text-foreground hover:bg-muted block w-full rounded-lg py-3 text-center font-medium transition-colors duration-200"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    ChangeLog
+                    Github
                   </Link>
                   <Link
                     prefetch={false}
@@ -247,7 +256,7 @@ export default function Header() {
                     className="bg-foreground text-background hover:bg-foreground/90 block w-full rounded-lg py-3 text-center font-medium transition-all duration-200"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Get Started
+                    Download
                   </Link>
                 </motion.div>
               </div>

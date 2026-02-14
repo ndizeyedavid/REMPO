@@ -10,6 +10,7 @@ import {
 import { Webhook } from "lucide-react";
 import Image from "next/image";
 import { BorderBeam } from "@/components/ui/border-beam";
+import Link from "next/link";
 
 const data = [
   {
@@ -251,9 +252,12 @@ export default function Faq() {
               <br className="hidden md:block" />
               Reach out to our friendly support team we&apos;re here to help.
             </p>
-            <button className="from-primary to-primary/60 relative z-[1] cursor-pointer overflow-hidden rounded-md bg-linear-to-tl px-8 py-3 font-medium text-white transition-all duration-700 before:absolute before:top-0 before:left-[-100%] before:h-full before:w-full before:rotate-45 before:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] before:transition-all before:duration-700 hover:scale-110 hover:px-12 hover:shadow-[0_0_20px_hsl(var(--primary)/0.4)] hover:before:left-[100%]">
+            <Link
+              href={"mailto:davindizeye101@gmail.com"}
+              className="from-primary to-primary/60 relative z-[1] cursor-pointer overflow-hidden rounded-md bg-linear-to-tl px-8 py-3 font-medium text-white transition-all duration-700 before:absolute before:top-0 before:left-[-100%] before:h-full before:w-full before:rotate-45 before:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] before:transition-all before:duration-700 hover:scale-110 hover:px-12 hover:shadow-[0_0_20px_hsl(var(--primary)/0.4)] hover:before:left-[100%]"
+            >
               Get in Touch
-            </button>
+            </Link>
           </div>
 
           {(() => {

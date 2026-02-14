@@ -168,11 +168,14 @@ export default function CTA() {
 
                 <div className="mt-10 rounded-xl bg-white/10 p-6 backdrop-blur">
                   <p className="text-lg font-medium">
-                    &quot;REMPO transformed how I manage my repositories. It's
-                    beautiful, fast, and incredibly powerful.&quot;
+                    &quot;I normally have a folder I named 'projects' and I
+                    stack in personal and other projects all in that folder. The
+                    issue is that whenever I spend time on another project, I
+                    normally forget what I've been working on recent projects,
+                    hence the idea of creating this solution&quot;
                   </p>
                   <p className="mt-3 font-medium text-white/70">
-                    — Alex Chen, Senior Developer
+                    — David NDIZEYE, Rempo's Creator
                   </p>
                 </div>
               </div>

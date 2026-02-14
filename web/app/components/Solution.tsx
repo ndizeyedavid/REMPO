@@ -87,7 +87,7 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
         className={cn(
           "relative rounded-2xl px-4 pt-4 pb-4 text-sm",
           "bg-secondary/50 ring-border ring",
-          feature.cornerStyle,
+          feature.cornerStyle
         )}
       >
         <div className="text-primary mb-3 text-[2rem]">
@@ -130,7 +130,7 @@ export default function Solutions() {
               Why Choose REMPO?
             </h2>
             <p className="text-muted-foreground mx-auto max-w-[18rem] text-center text-pretty">
-              REMPO combines powerful repository management and intelligent.
+              REMPO combines powerful repository management and AI intelligence.
             </p>
           </div>
 
