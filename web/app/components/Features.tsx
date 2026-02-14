@@ -62,7 +62,8 @@ export default function Features() {
   }, [progress]);
 
   return (
-    <div className={"p-8 md:p-12"}>
+    <div className={"p-8 md:p-12 relative"}>
+      <div className="pointer-events-none absolute inset-x-0 -top-[30px] h-[68px] bg-gradient-to-b from-[#121212] via-[#121212]/70 to-transparent" />
       <div className="mx-auto w-full max-w-7xl">
         <div className="relative mx-auto mb-12 max-w-2xl sm:text-center">
           <div className="relative z-10">
@@ -103,7 +104,7 @@ export default function Features() {
                     "flex h-12 w-12 items-center justify-center rounded-full border-2 md:h-14 md:w-14",
                     index === currentFeature
                       ? "border-primary bg-primary/10 text-primary scale-110 [box-shadow:0_0_15px_rgba(192,15,102,0.3)]"
-                      : "border-muted-foreground bg-muted",
+                      : "border-muted-foreground bg-muted"
                   )}
                 >
                   {feature.icon}
@@ -123,7 +124,7 @@ export default function Features() {
 
           <div
             className={cn(
-              "border-primary/20 relative order-1 h-[200px] overflow-hidden rounded-xl border [box-shadow:0_5px_30px_-15px_rgba(192,15,102,0.3)] md:order-2 md:h-[300px] lg:h-[400px]",
+              "border-primary/20 relative order-1 h-[200px] overflow-hidden rounded-xl border [box-shadow:0_5px_30px_-15px_rgba(192,15,102,0.3)] md:order-2 md:h-[300px] lg:h-[400px]"
             )}
           >
             <AnimatePresence mode="wait">
@@ -153,7 +154,7 @@ export default function Features() {
                         </span>
                       </div>
                     </motion.div>
-                  ),
+                  )
               )}
             </AnimatePresence>
           </div>

@@ -3,16 +3,16 @@
 import React, { useEffect, useRef } from "react";
 
 const colors = {
-  50: "#f8f7f5",
-  100: "#e6e1d7",
-  200: "#c8b4a0",
-  300: "#a89080",
-  400: "#8a7060",
-  500: "#6b5545",
-  600: "#544237",
-  700: "#3c4237",
-  800: "#2a2e26",
-  900: "#1a1d18",
+  50: "#e6f3ff", // very light blue
+  100: "#b3d9ff", // light blue
+  200: "#80bfff", // accent light blue
+  300: "#4da6ff", // mid blue
+  400: "#1a8cff", // brighter blue
+  500: "#0076db", // primary accent blue (matches logo)
+  600: "#005fb0", // darker blue
+  700: "#004685", // deep blue
+  800: "#00315c", // very deep blue
+  900: "#001a33", // near-black blue
 };
 
 export default function Hero() {
@@ -263,7 +263,7 @@ export default function Hero() {
         <div className="text-center">
           <h2
             className="font-mono text-xs font-light tracking-[0.2em] uppercase opacity-80 md:text-sm"
-            style={{ color: colors[200] }}
+            style={{ color: colors[50] }}
           >
             <span className="word" data-delay="0">
               Welcome
@@ -275,15 +275,15 @@ export default function Hero() {
               <b>REMPO</b>
             </span>
             <span className="word" data-delay="300">
-              —
+              (Repository
             </span>
             <span className="word" data-delay="400">
-              Remember
+              +
             </span>
             <span className="word" data-delay="500">
-              what
+              Remember)
             </span>
-            <span className="word" data-delay="600">
+            {/* <span className="word" data-delay="600">
               you
             </span>
             <span className="word" data-delay="700">
@@ -291,7 +291,7 @@ export default function Hero() {
             </span>
             <span className="word" data-delay="800">
               building.
-            </span>
+            </span> */}
           </h2>
           <div
             className="mt-4 h-px w-16 opacity-30"
@@ -309,51 +309,47 @@ export default function Hero() {
           >
             <div className="mb-4 md:mb-6">
               <span className="word" data-delay="900">
-                Discover,
+                Remember
               </span>
               <span className="word" data-delay="975">
-                visualize,
+                What
               </span>
               <span className="word" data-delay="1050">
-                and
+                You
               </span>
               <span className="word" data-delay="1125">
-                manage
+                Were
               </span>
               <span className="word" data-delay="1200">
-                your
+                Building
               </span>
-              <span className="word" data-delay="1275">
-                Git
-              </span>
-              <span className="word" data-delay="1350">
-                repositories.
-              </span>
+              <span className="word" data-delay="1275"></span>
+              <span className="word" data-delay="2700"></span>
             </div>
             <div
-              className="text-2xl leading-relaxed font-thin md:text-3xl lg:text-4xl"
+              className="text-2xl leading-relaxed font-thin md:text-3xl lg:text-4xl hidden"
               style={{ color: colors[200] }}
             >
               <span className="word" data-delay="1300">
-                Integrate,
+                Discover
               </span>
               <span className="word" data-delay="1375">
-                orchestrate,
+                Visualize
               </span>
               <span className="word" data-delay="1450">
                 and
               </span>
               <span className="word" data-delay="1525">
-                scale
+                Manage
               </span>
               <span className="word" data-delay="1600">
                 your
               </span>
               <span className="word" data-delay="1675">
-                business
+                Git
               </span>
               <span className="word" data-delay="1750">
-                — all
+                Repositories
               </span>
               <span className="word" data-delay="1825">
                 in
@@ -365,7 +361,7 @@ export default function Hero() {
                 secure
               </span>
               <span className="word" data-delay="2050">
-                platform.
+                applicaion.
               </span>
             </div>
           </h1>
@@ -397,24 +393,24 @@ export default function Hero() {
           ></div>
           <h2
             className="font-mono text-xs font-light tracking-[0.2em] uppercase opacity-80 md:text-sm"
-            style={{ color: colors[200] }}
+            style={{ color: colors[50] }}
           >
-            <span className="word" data-delay="4400">
+            <span className="word" data-delay="1275">
               Repository
             </span>
-            <span className="word" data-delay="4550">
+            <span className="word" data-delay="1350">
               scanning,
             </span>
-            <span className="word" data-delay="4700">
+            <span className="word" data-delay="1450">
               smart
             </span>
-            <span className="word" data-delay="4850">
+            <span className="word" data-delay="1550">
               caching,
             </span>
-            <span className="word" data-delay="5000">
+            <span className="word" data-delay="1650">
               terminal
             </span>
-            <span className="word" data-delay="5150">
+            <span className="word" data-delay="1750">
               integration.
             </span>
           </h2>
@@ -440,6 +436,9 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Bottom fade into Technologies section */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[138px] bg-gradient-to-b from-transparent  to-[#121212]" />
 
       <div
         id="mouse-gradient"
