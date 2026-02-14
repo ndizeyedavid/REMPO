@@ -37,12 +37,11 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity, 
   }, [project?.path]);
 
   const aiEnabled = !!aiSettings?.enabled;
-  const aiHasKey = !!aiSettings?.apiKey;
   const aiSummary = project?.path ? aiResponses?.[project.path] : null;
 
   const triggerSummary = async () => {
     if (!project?.path) return;
-    if (!aiEnabled || !aiHasKey) return;
+    if (!aiEnabled) return;
     if (aiSummary) return;
 
     setAiLoading(true);
@@ -60,7 +59,7 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity, 
     if (!project?.path) return;
     triggerSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project?.path, aiEnabled, aiHasKey]);
+  }, [project?.path, aiEnabled]);
 
   const handleOpenGithub = () => {
     if (remoteUrl) {
@@ -179,46 +178,40 @@ export default function ProjectDetailsDrawer({ project, onClose, onLogActivity, 
               AI Context Summary
             </div>
             {aiEnabled ? (
-              aiHasKey ? (
-                <>
-                  {aiSummary ? (
-                    <p className="text-sm leading-relaxed opacity-80">{aiSummary}</p>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-sm leading-relaxed opacity-60">
-                        {aiLoading ? "Generating summary..." : "No summary yet."}
-                      </p>
-                      {aiError && (
-                        <div className="text-xs bg-error/10 border border-error/20 rounded-xl p-3">
-                          {aiError}
-                        </div>
+              <>
+                {aiSummary ? (
+                  <p className="text-sm leading-relaxed opacity-80">{aiSummary}</p>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm leading-relaxed opacity-60">
+                      {aiLoading ? "Generating summary..." : "No summary yet."}
+                    </p>
+                    {aiError && (
+                      <div className="text-xs bg-error/10 border border-error/20 rounded-xl p-3">
+                        {aiError}
+                      </div>
+                    )}
+                    <button
+                      className="btn btn-xs btn-primary rounded-lg"
+                      onClick={() => {
+                        setAiError(null);
+                        setAiLoading(false);
+                        onTriggerSummary?.(project.path);
+                      }}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading ? (
+                        <>
+                          <Loader2 className="size-3 animate-spin" />
+                          Generating
+                        </>
+                      ) : (
+                        "Generate"
                       )}
-                      <button
-                        className="btn btn-xs btn-primary rounded-lg"
-                        onClick={() => {
-                          setAiError(null);
-                          setAiLoading(false);
-                          onTriggerSummary?.(project.path);
-                        }}
-                        disabled={aiLoading}
-                      >
-                        {aiLoading ? (
-                          <>
-                            <Loader2 className="size-3 animate-spin" />
-                            Generating
-                          </>
-                        ) : (
-                          "Generate"
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm leading-relaxed opacity-60">
-                  Add your Groq API key in Settings to enable summaries.
-                </p>
-              )
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <p className="text-sm leading-relaxed opacity-60">
                 AI summaries are disabled in Settings.

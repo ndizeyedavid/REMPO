@@ -21,11 +21,6 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
     setLocalSettings(next);
   };
 
-  const handleApiKeyChange = (apiKey) => {
-    const next = { ...localSettings, ai: { ...localSettings.ai, apiKey } };
-    setLocalSettings(next);
-  };
-
   const handleSetLanguage = (language) => {
     const next = { ...localSettings, language };
     setLocalSettings(next);
@@ -234,22 +229,6 @@ export default function SettingsModal({ onClose, currentTheme, onThemeChange, se
                       </p>
                     </div>
                   </section>
-
-                  <div className="form-control w-full">
-                    <label className="label">
-                      <span className="label-text font-bold">Groq API Key</span>
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="gsk_..."
-                      className="input input-bordered w-full bg-base-100/40 border-base-content/10 rounded-xl focus:border-primary/50"
-                      value={localSettings.ai?.apiKey || ""}
-                      onChange={(e) => handleApiKeyChange(e.target.value)}
-                    />
-                    <label className="label">
-                      <span className="label-text-alt opacity-50">Get your key from groq.com</span>
-                    </label>
-                  </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-base-200 border border-base-content/5">
