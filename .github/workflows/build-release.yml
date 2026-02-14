@@ -38,8 +38,8 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
-          Write-Output "version=$version" >> $env:GITHUB_OUTPUT
-          Write-Output "tag_name=v$version" >> $env:GITHUB_OUTPUT
+          echo "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "tag_name=v$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Output "📦 Package version: $version"
 
       - name: Check if tag exists
@@ -49,10 +49,10 @@ jobs:
           $tag = "${{ steps.get_version.outputs.tag_name }}"
           git fetch --tags
           if (git tag -l $tag) {
-            Write-Output "exists=true" >> $env:GITHUB_OUTPUT
+            echo "exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             Write-Output "⚠️ Tag $tag already exists"
           } else {
-            Write-Output "exists=false" >> $env:GITHUB_OUTPUT
+            echo "exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             Write-Output "✅ Tag $tag does not exist"
           }
 
@@ -80,15 +80,15 @@ jobs:
           # NSIS maker outputs to out/make/nsis/<arch>/
           $installer = Get-ChildItem -Path "out/make/nsis/x64" -Filter "*.exe" -Recurse | Select-Object -First 1
           if ($installer) {
-            Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
-            Write-Output "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+            echo "installer_path=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            echo "installer_name=$($installer.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             Write-Output "📦 Found NSIS installer: $($installer.Name)"
           } else {
             # Fallback: search all make directories
             $installer = Get-ChildItem -Path "out/make" -Filter "*.exe" -Recurse | Select-Object -First 1
             if ($installer) {
-              Write-Output "installer_path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
-              Write-Output "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+              echo "installer_path=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              echo "installer_name=$($installer.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
               Write-Output "📦 Found installer: $($installer.Name)"
             } else {
               Write-Error "❌ No .exe installer found!"
@@ -103,8 +103,8 @@ jobs:
           $version = "${{ steps.get_version.outputs.version }}"
           $content = Get-Content CHANGELOG.md -Raw
 
-          # Find the section for this version
-          $pattern = "## \[?$version\]?.*?(?=## \[|$)"
+          # Find section for this version
+          $pattern = "## \[?$version\].*?(?=## |\$)"
           $match = [regex]::Match($content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 
           if ($match.Success) {

@@ -495,7 +495,7 @@ Focus on the current state and purpose of the project.`;
     const proxyBase =
       (process.env.REMPO_AI_PROXY_URL &&
         String(process.env.REMPO_AI_PROXY_URL)) ||
-      "http://localhost:3000";
+      "https://rempoapp.vercel.app";
     const proxyUrl = `${proxyBase.replace(/\/+$/, "")}/api/ai/summary`;
 
     const res = await fetch(proxyUrl, {
