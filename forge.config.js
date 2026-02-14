@@ -15,7 +15,9 @@ module.exports = {
     {
       name: "@electron-addons/electron-forge-maker-nsis",
       platforms: ["win32"],
-      config: {},
+      config: {
+        publish: null,
+      },
     },
     {
       name: "@electron-forge/maker-zip",
