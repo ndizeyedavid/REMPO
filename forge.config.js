@@ -9,9 +9,9 @@ module.exports = {
   rebuildConfig: {},
   makers: [
     {
-      name: "@electron-forge/maker-squirrel",
+      name: "@electron-forge/maker-wix",
       config: {
-        setupIcon: "src/assets/favicon.ico",
+        name: "REMPO",
       },
     },
     {
