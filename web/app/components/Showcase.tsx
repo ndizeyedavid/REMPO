@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 const screenshots = [
   {
-    src: "/techs/electron.webp",
+    src: "/screenshots/app_4.webp",
     alt: "REMPO main window with global repositories view",
     title: "Global Git overview",
     description:
@@ -14,26 +14,35 @@ const screenshots = [
     layout: "col-span-2 row-span-2",
   },
   {
-    src: "/techs/react.webp",
-    alt: "REMPO hero UI",
-    title: "Beautiful desktop UI",
+    src: "/screenshots/app_2.webp",
+    alt: "Customization",
+    title: "9+ themes",
+    description: "Customize the overall look of the application",
+    layout: "col-span-1 row-span-2",
+  },
+  {
+    src: "/screenshots/app_6.webp",
+    alt: "Built-in AI",
+    title: "Built-in AI summarization",
     description:
-      "Dark theme tuned to your blue brand for long hacking sessions.",
-    layout: "col-span-1 row-span-1",
+      "Let AI summarize for you what the hell you've been working on",
+    layout: "col-span-3 row-span-2",
   },
   {
-    src: "/techs/tailwindcss.png",
-    alt: "Settings panel",
-    title: "Powerful settings",
-    description: "Control themes, AI, notifications and scan preferences.",
-    layout: "col-span-1 row-span-1",
+    src: "/screenshots/app_7.webp",
+    alt: "custom-file-manager",
+    title: "Full system scan",
+    description:
+      "Don't remember where you put your source code? Worry not! REMPO will scan the entire drive for you.",
+    layout: "col-span-1 row-span-2",
   },
   {
-    src: "/techs/llama.png",
-    alt: "AI summary overlay",
-    title: "AI summaries",
-    description: "Let LLaMA + Groq explain what you were building.",
-    layout: "col-span-2 row-span-1",
+    src: "/screenshots/app_5.webp",
+    alt: "custom-file-manager",
+    title: "Custom File Manager",
+    description:
+      "Explore your folders like never before, with a custom file manager",
+    layout: "col-span-2 row-span-2",
   },
 ];
 
@@ -55,14 +64,10 @@ export default function Showcase() {
             A peek inside REMPO
           </h2>
           <p className="mt-3 max-w-xl text-sm text-zinc-400">
-            Screenshots that capture the feel of the desktop app  the global
-            repo grid, AI summaries and blue neon vibes.
+            Take a look at how Rempo addresses your (probably) most frustrating
+            task.
           </p>
         </div>
-        <p className="mt-2 max-w-xs text-xs text-zinc-500 md:text-right">
-          All shots are from the actual REMPO Electron app. The layout below
-          uses a responsive Bento grid with subtle motion.
-        </p>
       </div>
 
       <div className="relative">

@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Rocket, Code, Paintbrush } from "lucide-react";
+import {
+  Rocket,
+  Code,
+  Paintbrush,
+  Search,
+  ScanQrCode,
+  GitBranch,
+  Stars,
+} from "lucide-react";
 
 const features = [
   {
@@ -11,36 +19,32 @@ const features = [
     title: "Scan & Discover",
     content:
       "Automatically discover all Git repositories across your system with our global scanning feature.",
-    icon: <Rocket className="text-primary h-6 w-6" />,
-    image:
-      "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop",
+    icon: <Search className="text-primary h-6 w-6" />,
+    image: "/screenshots/app_7.webp",
   },
   {
     step: "Step 2",
     title: "Visualize & Track",
     content:
       "View repository status, commit history, and changes at a glance with a beautiful, intuitive interface.",
-    icon: <Paintbrush className="text-primary h-6 w-6" />,
-    image:
-      "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=2070&auto=format&fit=crop",
+    icon: <ScanQrCode className="text-primary h-6 w-6" />,
+    image: "/screenshots/app_4.webp",
   },
   {
     step: "Step 3",
     title: "Build & Deploy",
     content:
       "Execute Git operations directly from the terminal with smart caching and optimized performance.",
-    icon: <Code className="text-primary h-6 w-6" />,
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+    icon: <GitBranch className="text-primary h-6 w-6" />,
+    image: "/screenshots/app_8.png",
   },
   {
     step: "Step 4",
     title: "Analyze with AI",
     content:
       "Get AI-powered summaries and insights about your repositories with lazy loading for optimal speed.",
-    icon: <Code className="text-primary h-6 w-6" />,
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+    icon: <Stars className="text-primary h-6 w-6" />,
+    image: "/screenshots/app_6.webp",
   },
 ];
 
@@ -148,7 +152,7 @@ export default function Features() {
                       />
                       <div className="from-background via-background/50 absolute right-0 bottom-0 left-0 h-2/3 bg-gradient-to-t to-transparent" />
 
-                      <div className="bg-background/80 absolute bottom-4 left-4 rounded-lg p-2 backdrop-blur-sm">
+                      <div className="bg-background/80 absolute bottom-4 left-4 rounded-lg p-2 backdrop-blur-sm hidden">
                         <span className="text-primary text-xs font-medium">
                           {feature.step}
                         </span>

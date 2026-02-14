@@ -5,10 +5,35 @@ import Footer from "../components/Footer";
 
 const entries = [
   {
-    version: "0.0.4-beta",
-    title: "Production build, blue brand, and marketing site",
+    version: "0.0.5-beta",
+    title: "Ready for submission",
     date: "February 14, 2026",
     badge: "Latest",
+    highlights: ["setup", "UI", "AI"],
+    items: [
+      {
+        label: "Added",
+        points: [
+          "WAI integration is done for you out of the box",
+          "Llama 3 is backed with the system",
+          "Drive selection (scan selected drives or select all)",
+          "Confirmation modal before starting a full system scan",
+        ],
+      },
+      {
+        label: "Changed",
+        points: [
+          "Progress IPC now includes the current folder being scanned",
+          "Repositories that cannot be fully inspected are still returned with an error field, and the UI reports scan warnings",
+          "Fixed React attribute issues in updated Welcome screen components",
+        ],
+      },
+    ],
+  },
+  {
+    version: "0.0.4-beta",
+    title: "Production build, blue brand, and marketing site",
+    date: "February 11, 2026",
     highlights: ["Bug", "Update", "Windows"],
     items: [
       {
@@ -93,11 +118,11 @@ export default function ChangelogPage() {
               Live on GitHub
             </span>
             <Link
-              href="https://github.com/ndizeyedavid/REMPO/releases"
+              href="https://github.com/ndizeyedavid/REMPO/blob/main/CHANGELOG.md"
               target="_blank"
               className="text-xs text-zinc-400 underline-offset-4 hover:text-zinc-200 hover:underline"
             >
-              View all releases on GitHub
+              View all on GitHub
             </Link>
           </div>
         </header>
